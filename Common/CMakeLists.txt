@@ -1,5 +1,6 @@
 add_library(common STATIC
-    # فایل‌های .h و .cpp رو خودت بعداً اینجا اضافه کن
+    member.h
+    member.cpp
 )
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
