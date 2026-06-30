@@ -58,6 +58,6 @@ compile_commands.json
 # QtCreator local settings
 .qtcreator/
 
-
 *.user
 *.user.*
+.vscode/
