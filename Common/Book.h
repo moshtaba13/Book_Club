@@ -4,6 +4,8 @@
 #include <QString>
 #include <QVector>
 
+#include "Review.h"
+
 enum class genre {
     Fiction,
     Non_fiction,
@@ -17,40 +19,49 @@ enum class genre {
     Scary
 };
 
-class Book {
+class Book
+{
 private:
-    int Id;
+    const int Id;
     QString Title;
     QString Author;
+    genre Genre;
     double Price;
     double Discount;
-    genre Genre;
     bool isActive;
-    QVector<QString> Comments;
-    QVector<int> Ratings;
+
+    QVector<Review> Reviews;
 
 public:
+    Book(int Id,
+         const QString& Title,
+         const QString& Author,
+         genre Genre,
+         double Price,
+         double Discount,
+         bool isActive);
 
-    Book(int Id, QString Title, QString Author, double Price, double Discount, genre Genre, bool isActive);
+    ~Book() = default;
 
     int getId() const;
     QString getTitle() const;
     QString getAuthor() const;
+    genre getGenre() const;
     double getPrice() const;
     double getDiscount() const;
-    genre getGenre() const;
     bool getisACTIVE() const;
 
-    void setTitle(QString newTitle);
-    void setAuthor(QString newAuthor);
+    void setTitle(const QString& newTitle);
+    void setAuthor(const QString& newAuthor);
+    void setGenre(genre newGenre);
     void setPrice(double newPrice);
     void setDiscount(double newDiscount);
-    void setGenre(genre newGenre);
     void setisACTIVE(bool newisActive);
 
     double getAverageRating() const;
     double getFinalPrice() const;
-    void addReview(int Rating, const QString& Comment);
+
+    void addReview(const Review& review);
 };
 
-#endif 
+#endif
