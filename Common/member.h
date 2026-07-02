@@ -6,7 +6,6 @@
 class Member
 {
 private:
-    static int counter;
     const int ID;
     QString username;
     QString password;

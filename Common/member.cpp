@@ -1,9 +1,8 @@
 #include "member.h"
 
-int Member::counter = 0;
 
 Member::Member(QString username, QString password, QString securityAnswer): 
-ID(counter++), username(username), password(password), securityAnswer(securityAnswer), blocked(false){}
+ID(0), username(username), password(password), securityAnswer(securityAnswer), blocked(false){}
 
 int Member::getId() const{return ID;}
 QString Member::getUsername() const{return username;}
