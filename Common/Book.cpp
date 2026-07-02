@@ -1,5 +1,7 @@
 #include "Book.h"
 
+int Book::counter=0;
+
 Book::Book(int Id,
            const QString& Title,
            const QString& Author,
@@ -13,8 +15,10 @@ Book::Book(int Id,
       Genre(Genre),
       Price(Price),
       Discount(Discount),
-      isActive(isActive)
+      isActive(isActive),
+
 {
+    ++counter;
 }
 
 int Book::getId() const
@@ -51,7 +55,9 @@ bool Book::getisACTIVE() const
 {
     return isActive;
 }
-
+int Book::getBookCount(){
+    return counter;
+}
 void Book::setTitle(const QString& newTitle)
 {
     Title = newTitle;

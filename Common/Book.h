@@ -29,6 +29,7 @@ private:
     double Price;
     double Discount;
     bool isActive;
+    static int counter;
 
     QVector<Review> Reviews;
 
@@ -50,6 +51,7 @@ public:
     double getPrice() const;
     double getDiscount() const;
     bool getisACTIVE() const;
+    int geBookCount() const;
 
     void setTitle(const QString& newTitle);
     void setAuthor(const QString& newAuthor);
