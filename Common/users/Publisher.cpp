@@ -9,7 +9,7 @@ Publisher::Publisher(const QString &username, const QString &password, const QSt
 
 QString Publisher::role() const{return "Publisher";}
 
-QVector<Book> Publisher::getPublishedBooks() const{ return publishedBooks;}
+const QVector<Book>& Publisher::getPublishedBooks() const{ return publishedBooks;}
 
 void Publisher::addPublishedBook(const Book &book){
     publishedBooks.append(book);
@@ -36,4 +36,4 @@ void Publisher::updatePublishedBook(const Book &updated) {
 double Publisher::getTotalRevenue() const{ return totalRevenue;}
 void Publisher::setTotalRevenue(double revenue) { totalRevenue = revenue;}
 
-int Publisher::numberOfPublishedBook() {return publishedBooks.size();}
+int Publisher::numberOfPublishedBook() const{return publishedBooks.size();}

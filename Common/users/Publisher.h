@@ -16,7 +16,7 @@ public:
 
     QString role() const override;
 
-    QVector<Book> getPublishedBooks() const;
+    const QVector<Book>& getPublishedBooks() const;
     void addPublishedBook(const Book &book);
     void removePublishedBook(int bookId);
     void updatePublishedBook(const Book &book);
@@ -24,7 +24,7 @@ public:
     double getTotalRevenue() const;
     void setTotalRevenue(double revenue);
 
-    int numberOfPublishedBook();
+    int numberOfPublishedBook() const;
 };
 
 #endif

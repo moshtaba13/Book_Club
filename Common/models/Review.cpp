@@ -57,3 +57,7 @@ void Review::Edit(int newStars, const QString& newComment)
 
     lastEdited = QDateTime::currentDateTime();
 }
+
+QString Review::getUsername() const{return Username;}
+
+void Review::setUsername(const QString &username) {Username = username;}

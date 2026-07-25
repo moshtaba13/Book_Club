@@ -37,7 +37,7 @@ public:
     QDateTime getRegisterDate() const;
     void setRegisterDate(const QDateTime &date);
 
-    QVector<Notification> getNotifications() const;
+    const QVector<Notification>& getNotifications() const;
     void addNotification(const Notification &notification);
     void markNotificationRead(int notificationId);
     void markAllNotificationsRead();

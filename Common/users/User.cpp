@@ -3,32 +3,35 @@
 User::User():Member(), firstLogin(true){}
 
 User::User(const QString& username, const QString& password, const QString& securityAnswer)
-    : Member(username, password, securityAnswer), firstLogin(true) {}
+    : Member(username, password, securityAnswer), purchasesCount(0) ,firstLogin(true) {}
 
 QString User::role() const{ return "User";}
 
-QVector<genre> User::getfavoriteGenres() const {return favoriteGenres;}
+const QVector<genre>& User::getfavoriteGenres() const {return favoriteGenres;}
 void User::setFavoriteGenres(const QVector<genre> &genres) { favoriteGenres = genres; }
+
 void User::addFavoriteGenre(const genre &Genre)
 {
     if (!favoriteGenres.contains(Genre) && favoriteGenres.size() < 3)
         favoriteGenres.append(Genre);
 }
 
-QVector<Book> User::getpurchasedBooks() const {return purchasedBooks;}
-void User::addPurchasedBook(const Book &book) {
-    if (!hasPurchasedBook(book.getId()))
+const QVector<Purchase>& User::getpurchasedBooks() const {return purchasedBooks;}
+
+void User::addPurchasedBook(const Purchase &book) {
+    if (!hasPurchasedBook(book.getBook().getId())) {
         purchasedBooks.append(book);
+    }
 }
 
 bool User::hasPurchasedBook(int bookId) const{
-    for (const Book &b : purchasedBooks)
-        if (b.getId() == bookId)
+    for (const Purchase &b : purchasedBooks)
+        if (b.getBook().getId() == bookId)
             return true;
     return false;
 }
 
-QVector<Book> User::getSavedBooks() const{ return savedBooks;}
+const QVector<Book>& User::getSavedBooks() const{ return savedBooks;}
 void User::addSavedBook(const Book &book) {
     if (!hasSavedBook(book.getId()))
         savedBooks.append(book);
@@ -50,18 +53,9 @@ bool User::hasSavedBook(int bookId) const{
     return false;
 }
 
-Cart& User::getCart() { return cart; }
+const Cart& User::getCart() const{return cart;}
 
-int User::getlastReadPage(int bookId) const
-{
-    return lastReadPages.value(bookId, 0);
-}
-void User::setLastReadPage(int bookId, int page)
-{
-    lastReadPages[bookId] = page;
-}
-
-QVector<Shelf> User::getShelves() const{ return shelves;}
+const QVector<Shelf>& User::getShelves() const{ return shelves;}
 
 void User::addShelf(const Shelf &shelf) {
     if (!findShelf(shelf.getName()))
@@ -89,6 +83,24 @@ Shelf* User::findShelf(const QString &name) {
             return &s;
     return nullptr;
 }
+
+int User::lastReadPage(int bookId) const{
+    for (const Purchase &p : purchasedBooks)
+        if (p.getBook().getId() == bookId)
+            return p.getLastReadPage();
+    return 0;
+}
+
+void User::setLastReadPage(int bookId, int page) {
+    for (Purchase &p : purchasedBooks)
+        if (p.getBook().getId() == bookId) {
+            p.setLastReadPage(page);
+            break;
+        }
+}
+
+int User::getPurchasecount() const{return purchasesCount;}
+void User::setPurchaseCount(int count) {purchasesCount = count;}
 
 bool User::isFirstLogin() const { return firstLogin; }
 void User::setFirstLogin(bool first) { firstLogin = first;}

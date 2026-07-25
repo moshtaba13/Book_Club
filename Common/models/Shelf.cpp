@@ -29,7 +29,7 @@ bool Shelf::containsBook(int bookId) const {
     return false;
 }
 
-QVector<Book> Shelf::getBooks() const{ return books;}
+const QVector<Book>& Shelf::getBooks() const{ return books;}
 
 int Shelf::bookCount() const{ return books.size();}
 

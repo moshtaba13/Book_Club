@@ -3,10 +3,10 @@
 int Notification::idCounter = 1;
 
 Notification::Notification()
-    :seen(false),createdAt(QDateTime::currentDateTime()) {};
+    :id(0), seen(false), createdAt(QDateTime::currentDateTime()) {};
 
 Notification::Notification(const QString &message)
-    :id(idCounter++),message(message), seen(false), createdAt(QDateTime::currentDateTime()) {};
+    :id(0), message(message), seen(false), createdAt(QDateTime::currentDateTime()) {};
 
 int Notification::getId() const{ return id;}
 void Notification::setId(const int i) { id = i;}

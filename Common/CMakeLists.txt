@@ -9,6 +9,8 @@ add_library(common STATIC
     models/Shelf.cpp
     models/Notification.h
     models/Notification.cpp
+    models/Purchase.h
+    models/Purchase.cpp
     users/Member.h
     users/Member.cpp
     users/User.h
@@ -17,6 +19,7 @@ add_library(common STATIC
     users/Publisher.cpp
     users/Admin.h
     users/Admin.cpp
+    protocol.h
 )
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

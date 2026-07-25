@@ -16,7 +16,7 @@ void Member::setBlocked(bool block) {blocked = block;}
 QDateTime Member::getRegisterDate() const { return registerDate; }
 void Member::setRegisterDate(const QDateTime &date) { registerDate = date; }
 
-QVector<Notification> Member::getNotifications() const{ return notifications;}
+const QVector<Notification>& Member::getNotifications() const{return notifications;}
 
 void Member::addNotification(const Notification &notification) {
     notifications.append(notification);

@@ -1,27 +1,25 @@
 #include "Book.h"
 
-int Book::idCounter = 1;
-
-Book::Book()
+Book::Book() 
     : Id(0),
-    Discount(0.0),
-    isActive(true),
-    salesCount(0),
-    averageRating(0.0){}
+      Discount(0.0),
+      isActive(true),
+      salesCount(0),
+      averageRating(0.0){}
 
 Book::Book(const QString& title,
-           const QString& author,
-           genre Genre,
-           double Price)
-    : Id(idCounter),
-    Title(title),
-    Author(author),
-    Genre(Genre),
-    Price(Price),
-    Discount(0.0),
-    isActive(true),
-    salesCount(0),
-    averageRating(0.0){}
+         const QString& author,
+         genre Genre,
+         double Price)
+    : Id(0),
+      Title(title),
+      Author(author),
+      Genre(Genre),
+      Price(Price),
+      Discount(0.0),
+      isActive(true),
+      salesCount(0),
+      averageRating(0.0){}
 
 int Book::getId() const{ return Id;}
 QString Book::getTitle() const{return Title;}
@@ -40,10 +38,7 @@ double Book::getAverageRating() const{return averageRating;}
 double Book::getFinalPrice() const{
     return Price * (1.0 - Discount / 100.0);
 }
-const QVector<Review>& Book::getReviews() const
-{
-    return Reviews;
-}
+const QVector<Review>& Book::getReviews() const{return Reviews;}
 
 void Book::setId(const int id) {Id= id;}
 void Book::setTitle(const QString& newTitle) {Title = newTitle;}
@@ -59,49 +54,6 @@ void Book::setisActive(bool newisActive) {isActive = newisActive;}
 void Book::setAverageRating(double ave) {averageRating = ave;}
 void Book::setSalesCount(int count) {salesCount = count;}
 void Book::setPublisherUsername(const QString& username) {publisherUsername = username;}
-
-
-bool Book::hasUserReviewed(int userId) const
-{
-    for (const Review &r : Reviews) {
-        if (r.getUserId() == userId) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool Book::addReview(const Review& review)
-{
-    if (hasUserReviewed(review.getUserId())) {
-        return false; // هر کاربر فقط یک‌بار می‌تواند نظر ثبت کند
-    }
+void Book::addReview(const Review& review){
     Reviews.append(review);
-    recalculateAverageRating();
-    return true;
-}
-
-bool Book::removeReview(int userId)
-{
-    for (int i = 0; i < Reviews.size(); ++i) {
-        if (Reviews[i].getUserId() == userId) {
-            Reviews.removeAt(i);
-            recalculateAverageRating();
-            return true;
-        }
-    }
-    return false;
-}
-
-void Book::recalculateAverageRating()
-{
-    if (Reviews.isEmpty()) {
-        averageRating = 0.0;
-        return;
-    }
-    double sum = 0.0;
-    for (const Review &r : Reviews) {
-        sum += r.getStars();
-    }
-    averageRating = sum / Reviews.size();
 }

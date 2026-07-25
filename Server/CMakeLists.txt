@@ -1,5 +1,31 @@
 add_executable(BookClubServer
-    # بقیه فایل‌ها رو خودت بعداً اینجا اضافه کن
+    Database.h
+    Database.cpp
+    main.cpp
+    repositories/MemberRepository.h
+    repositories/MemberRepository.cpp
+    repositories/BookRepository.h
+    repositories/BookRepository.cpp
+    repositories/PurchaseRepository.h
+    repositories/PurchaseRepository.cpp
+    repositories/CartRepository.h
+    repositories/CartRepository.cpp
+    repositories/SavedBookRepository.h
+    repositories/SavedBookRepository.cpp
+    repositories/ShelfRepository.h
+    repositories/ShelfRepository.cpp
+    repositories/NotificationRepository.h
+    repositories/NotificationRepository.cpp
+    managers/AuthManager.h
+    managers/AuthManager.cpp
+    managers/BookManager.h
+    managers/BookManager.cpp
+    managers/NotificationManager.h
+    managers/NotificationManager.cpp
+    managers/UserManager.h
+    managers/userManager.cpp
+    managers/PurchaseManager.h
+    managers/PurchaseManager.cpp
 )
 
 target_link_libraries(BookClubServer PRIVATE

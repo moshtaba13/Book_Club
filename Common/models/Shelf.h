@@ -20,7 +20,7 @@ public:
     void removeBook(int bookId);
     bool containsBook(int bookId) const;
 
-    QVector<Book> getBooks() const;
+    const QVector<Book>& getBooks() const;
     int bookCount() const;
     bool isEmpty() const;
 };

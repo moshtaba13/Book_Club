@@ -8,6 +8,7 @@ class Review
 {
 private:
     int UserId;
+    QString Username;
     int Stars;
     QString Comment;
     QDateTime TimeStamp;
@@ -31,6 +32,10 @@ public:
 
     void Edit(int newStars,
               const QString& newComment);
+
+    QString getUsername() const;
+    void setUsername(const QString &username);
+
 };
 
-#endif // REVIEW_H
+#endif 
