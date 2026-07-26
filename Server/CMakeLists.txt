@@ -26,6 +26,28 @@ add_executable(BookClubServer
     managers/userManager.cpp
     managers/PurchaseManager.h
     managers/PurchaseManager.cpp
+    managers/FileManager.h
+    managers/fileManager.cpp
+    network/ClientHandler.h
+    network/ClientHandler.cpp
+    network/Server.h
+    network/Server.cpp
+    network/handlers/BaseHandler.h
+    network/handlers/BaseHandler.cpp
+    network/handlers/AuthHandler.h
+    network/handlers/AuthHandler.cpp
+    network/handlers/BookHandler.h
+    network/handlers/BookHandler.cpp
+    network/handlers/CartHandler.h
+    network/handlers/CartHandler.cpp
+    network/handlers/LibraryHandler.h
+    network/handlers/LibraryHandler.cpp
+    network/handlers/ProfileHandler.h
+    network/handlers/ProfileHandler.cpp
+    network/handlers/AdminHandler.h
+    network/handlers/AdminHandler.cpp
+    network/handlers/NotificationHandler.h
+    network/handlers/NotificationHandler.cpp
 )
 
 target_link_libraries(BookClubServer PRIVATE
@@ -33,4 +55,5 @@ target_link_libraries(BookClubServer PRIVATE
     Qt6::Core
     Qt6::Network
     Qt6::Sql
+    Qt6::Widgets
 )

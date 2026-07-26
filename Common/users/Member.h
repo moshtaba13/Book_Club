@@ -14,7 +14,7 @@ private:
     QString username;
     QString password;
     bool blocked;
-    const QString securityAnswer;
+    QString securityAnswer;
     QDateTime registerDate;
     QVector<Notification> notifications;
 public:
