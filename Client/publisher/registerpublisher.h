@@ -10,31 +10,29 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QPaintEvent>
-#include "PublisherManager.h"
-#include "UserManager.h"
+#include "NetworkManager.h"
 
 class RegisterPublisher : public QWidget {
     Q_OBJECT
 public:
-    explicit RegisterPublisher(PublisherManager *publisherManager, UserManager *userManager, QWidget *parent = nullptr);
+    explicit RegisterPublisher(QWidget *parent = nullptr);
     ~RegisterPublisher();
 protected:
     void paintEvent(QPaintEvent *event) override;
 private slots:
     void onSignUpClicked();
+    void onNetworkResponse(RequestType type, ResponseStatus status, const QJsonObject &data, const QString &message);
 signals:
     void SignUpSuccess();
     void goToLogin();
 private:
-    PublisherManager *publisherManager;
-    UserManager *userManager;
-
     QFrame *signupframe;
     QLabel *lblwelcome;
     QLabel *lblsubtitle;
     QLabel *lblusername;
     QLineEdit *leusername;
-
+    QLabel *lblemail;
+    QLineEdit *leemail;
     QLabel *lblpassword;
     QLineEdit *lepassword;
     QLabel *lblconfirmpassword;

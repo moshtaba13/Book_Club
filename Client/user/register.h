@@ -10,29 +10,28 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QPaintEvent>
-#include "UserManager.h"
-#include "PublisherManager.h"
+#include "NetworkManager.h"
 
 class Register : public QWidget {
     Q_OBJECT
 public:
-    explicit Register(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent = nullptr);
+    explicit Register(QWidget *parent = nullptr);
     ~Register();
 protected:
     void paintEvent(QPaintEvent *event) override;
 private slots:
     void onSignUpClicked();
+    void onNetworkResponse(RequestType type, ResponseStatus status, const QJsonObject &data, const QString &message);
 signals:
     void SignUpSuccess();
     void goToLogin();
 private:
-    UserManager *userManager;
-
     QFrame *signupframe;
     QLabel *lblwelcome;
     QLabel *lblsubtitle;
     QLabel *lblusername;
     QLineEdit *leusername;
+    QLabel *lblemail;
     QLineEdit *leemail;
     QLabel *lblpassword;
     QLineEdit *lepassword;
@@ -44,6 +43,5 @@ private:
     QPushButton *btnsignup;
     QLabel *lblsignin;
     QPushButton *btnsignin;
-    PublisherManager *publisherManager;
 };
 #endif // REGISTER_H

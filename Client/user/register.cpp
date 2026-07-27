@@ -3,10 +3,13 @@
 #include <QPainter>
 #include <QMessageBox>
 #include "User.h"
+#include <QJsonObject>
 
-Register::Register(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent)
-    : QWidget(parent), userManager(userManager), publisherManager(publisherManager)
+Register::Register(QWidget *parent)
+    : QWidget(parent)
 {
+    connect(&NetworkManager::instance(), &NetworkManager::responseReceived,
+            this, &Register::onNetworkResponse);
     // ۱. تنظیم نام آبجکت برای اعمال پس‌زمینه کرمی یکدست روی کل صفحه
     this->setObjectName("signUpPage");
     this->setStyleSheet(
@@ -186,67 +189,62 @@ Register::Register(UserManager *userManager, PublisherManager *publisherManager,
 }
 
 void Register::onSignUpClicked() {
-    // ۱. بررسی خالی بودن نام کاربری
     if (leusername->text().isEmpty()) {
         QMessageBox::warning(this, "Validation Error", "Please enter a username.");
         return;
     }
-
-    // ۲. بررسی خالی بودن ایمیل
-
-
-    // ۳. بررسی خالی بودن رمز عبور
+    if (leemail->text().isEmpty()) {
+        QMessageBox::warning(this, "Validation Error", "Please enter your email address.");
+        return;
+    }
     if (lepassword->text().isEmpty()) {
         QMessageBox::warning(this, "Validation Error", "Please enter a password.");
         return;
     }
-
-    // ۴. بررسی خالی بودن تاییدیه رمز عبور
     if (leconfirmpassword->text().isEmpty()) {
         QMessageBox::warning(this, "Validation Error", "Please confirm your password.");
         return;
     }
-
-    // ۵. بررسی تطابق رمز عبور و تاییدیه آن
     if (lepassword->text() != leconfirmpassword->text()) {
         QMessageBox::warning(this, "Validation Error", "Passwords do not match. Please try again.");
         return;
     }
-
-    // ۶. بررسی خالی بودن پاسخ سؤال امنیتی
     if (lesecurityanswer->text().isEmpty()) {
         QMessageBox::warning(this, "Validation Error", "Please answer the security question.");
         return;
     }
-
-    // ۷. بررسی تایید قوانین و شروط
     if (!chkterms->isChecked()) {
         QMessageBox::warning(this, "Validation Error", "You must agree to the Terms and Conditions to register.");
         return;
     }
 
-    // ۸. ساخت کاربر جدید و ثبتش در UserManager
-    User newUser(leusername->text().trimmed(), lepassword->text(), lesecurityanswer->text().trimmed());
-    newUser.setFirstLogin(true);
-
-    if (userManager->usernameExists(leusername->text().trimmed()) ||
-        publisherManager->usernameExists(leusername->text().trimmed())) {
-        QMessageBox::warning(this, "Validation Error", "This username is already taken. Please choose another one.");
+    if (!NetworkManager::instance().isConnected()) {
+        QMessageBox::warning(this, "Connection Error", "Not connected to the server.");
         return;
     }
 
-    bool success = userManager->registerUser(newUser);
-    if (!success) {
-        QMessageBox::warning(this, "Validation Error", "Something went wrong. Please try again.");
-        return;
-    }
+    QJsonObject data;
+    data["username"] = leusername->text().trimmed();
+    data["password"] = lepassword->text();
+    data["security_answer"] = lesecurityanswer->text().trimmed();
 
-    // ۹. نمایش پیام موفقیت و شلیک سیگنال
-    QMessageBox::information(this, "Success", "Your account has been created successfully!");
-
-    emit SignUpSuccess();
+    NetworkManager::instance().sendRequest(RequestType::Register, data);
 }
 
+void Register::onNetworkResponse(RequestType type, ResponseStatus status, const QJsonObject &data, const QString &message)
+{
+    Q_UNUSED(data);
+    if (type != RequestType::Register) return;
+
+    if (status != ResponseStatus::Success) {
+        QMessageBox::warning(this, "Validation Error",
+                             message.isEmpty() ? "This username is already taken." : message);
+        return;
+    }
+
+    QMessageBox::information(this, "Success", "Your account has been created successfully!");
+    emit SignUpSuccess();
+}
 void Register::paintEvent(QPaintEvent *event) {
     QStyleOption opt;
     opt.initFrom(this);

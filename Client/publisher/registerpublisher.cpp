@@ -3,10 +3,13 @@
 #include <QPainter>
 #include <QMessageBox>
 #include "Publisher.h"
+#include <QJsonObject>
 
-RegisterPublisher::RegisterPublisher(PublisherManager *publisherManager, UserManager *userManager, QWidget *parent)
-    : QWidget(parent), publisherManager(publisherManager), userManager(userManager)
+RegisterPublisher::RegisterPublisher(QWidget *parent)
+    : QWidget(parent)
 {
+    connect(&NetworkManager::instance(), &NetworkManager::responseReceived,
+            this, &RegisterPublisher::onNetworkResponse);
     this->setObjectName("signUpPublisherPage");
     this->setStyleSheet(
         "QWidget#signUpPublisherPage {"
@@ -176,7 +179,10 @@ void RegisterPublisher::onSignUpClicked() {
         QMessageBox::warning(this, "Validation Error", "Please enter a username.");
         return;
     }
-
+    if (leemail->text().isEmpty()) {
+        QMessageBox::warning(this, "Validation Error", "Please enter your email address.");
+        return;
+    }
     if (lepassword->text().isEmpty()) {
         QMessageBox::warning(this, "Validation Error", "Please enter a password.");
         return;
@@ -198,20 +204,27 @@ void RegisterPublisher::onSignUpClicked() {
         return;
     }
 
-    QString username = leusername->text().trimmed();
-
-    if (userManager->usernameExists(username) || publisherManager->usernameExists(username)) {
-        QMessageBox::warning(this, "Validation Error", "This username is already taken. Please choose another one.");
+    if (!NetworkManager::instance().isConnected()) {
+        QMessageBox::warning(this, "Connection Error", "Not connected to the server.");
         return;
     }
 
-    Publisher newPublisher(username, lepassword->text(), lesecurityanswer->text().trimmed());
+    QJsonObject data;
+    data["username"] = leusername->text().trimmed();
+    data["password"] = lepassword->text();
+    data["security_answer"] = lesecurityanswer->text().trimmed();
 
+    NetworkManager::instance().sendRequest(RequestType::RegisterPublisher, data);
+}
 
-    bool success = publisherManager->registerPublisher(newPublisher);
+void RegisterPublisher::onNetworkResponse(RequestType type, ResponseStatus status, const QJsonObject &data, const QString &message)
+{
+    Q_UNUSED(data);
+    if (type != RequestType::RegisterPublisher) return;
 
-    if (!success) {
-        QMessageBox::warning(this, "Validation Error", "Something went wrong. Please try again.");
+    if (status != ResponseStatus::Success) {
+        QMessageBox::warning(this, "Validation Error",
+                             message.isEmpty() ? "This username is already taken." : message);
         return;
     }
 
