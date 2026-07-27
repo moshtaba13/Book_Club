@@ -85,6 +85,8 @@ qt_add_executable(Client
     publisher/publisherdashboardwidget.cpp
     admin/adminpanelwidget.h
     admin/adminpanelwidget.cpp
+    general/NetworkManager.h
+    general/NetworkManager.cpp
 
 
 )

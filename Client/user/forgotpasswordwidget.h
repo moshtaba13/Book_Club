@@ -4,34 +4,23 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include "UserManager.h"
-#include <QPainter>
-#include <QStyleOption>
+#include "NetworkManager.h"
 
 class ForgotPasswordWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ForgotPasswordWidget(UserManager *manager, QWidget *parent = nullptr);
-protected:
-    void paintEvent(QPaintEvent *event) override;
+    explicit ForgotPasswordWidget(QWidget *parent = nullptr);
 
 signals:
     void backToLoginRequested();
 
 private slots:
-    void onFindUserClicked();
     void onResetClicked();
+    void onNetworkResponse(RequestType type, ResponseStatus status, const QJsonObject &data, const QString &message);
 
 private:
-    UserManager *userManager;
-    QString currentUsername;
-    QString currentSecurityAnswer;
-
     QLineEdit *leUsername;
-    QPushButton *btnFindUser;
-
-    QLabel *lblQuestion;
     QLineEdit *leAnswer;
     QLineEdit *leNewPassword;
     QLineEdit *leConfirmPassword;

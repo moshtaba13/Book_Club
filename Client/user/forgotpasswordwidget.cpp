@@ -1,11 +1,10 @@
 #include "forgotpasswordwidget.h"
 #include <QVBoxLayout>
 #include <QMessageBox>
-#include <QPainter>
-#include <QStyleOption>
+#include <QJsonObject>
 
-ForgotPasswordWidget::ForgotPasswordWidget(UserManager *manager, QWidget *parent)
-    : QWidget(parent), userManager(manager)
+ForgotPasswordWidget::ForgotPasswordWidget(QWidget *parent)
+    : QWidget(parent)
 {
     this->setObjectName("forgotPage");
     this->setStyleSheet("QWidget#forgotPage { background-color: #FCFCFC; }");
@@ -25,34 +24,21 @@ ForgotPasswordWidget::ForgotPasswordWidget(UserManager *manager, QWidget *parent
     leUsername->setMinimumHeight(38);
     layout->addWidget(leUsername);
 
-    btnFindUser = new QPushButton("Continue", this);
-    btnFindUser->setStyleSheet(
-        "QPushButton { background-color: rgba(255,255,255,220); color: #2C3E50; border: 1.5px solid #FFC0CB; border-radius: 8px; font-weight: bold; padding: 8px; }"
-        "QPushButton:hover { background-color: #FFC0CB; color: white; }"
-        );
-    layout->addWidget(btnFindUser);
-
-    lblQuestion = new QLabel(this);
-    lblQuestion->setStyleSheet("color: #706357;");
-    lblQuestion->setWordWrap(true);
-    lblQuestion->hide();
-    layout->addWidget(lblQuestion);
-
     leAnswer = new QLineEdit(this);
-    leAnswer->setPlaceholderText("Your answer");
-    leAnswer->hide();
+    leAnswer->setPlaceholderText("Your favorite book or author (security answer)");
+    leAnswer->setMinimumHeight(38);
     layout->addWidget(leAnswer);
 
     leNewPassword = new QLineEdit(this);
     leNewPassword->setPlaceholderText("New password");
     leNewPassword->setEchoMode(QLineEdit::Password);
-    leNewPassword->hide();
+    leNewPassword->setMinimumHeight(38);
     layout->addWidget(leNewPassword);
 
     leConfirmPassword = new QLineEdit(this);
     leConfirmPassword->setPlaceholderText("Confirm new password");
     leConfirmPassword->setEchoMode(QLineEdit::Password);
-    leConfirmPassword->hide();
+    leConfirmPassword->setMinimumHeight(38);
     layout->addWidget(leConfirmPassword);
 
     btnReset = new QPushButton("Reset Password", this);
@@ -60,7 +46,6 @@ ForgotPasswordWidget::ForgotPasswordWidget(UserManager *manager, QWidget *parent
         "QPushButton { background-color: #6F4E37; color: white; border-radius: 8px; font-weight: bold; padding: 10px; }"
         "QPushButton:hover { background-color: #A33A4A; }"
         );
-    btnReset->hide();
     layout->addWidget(btnReset);
 
     btnBack = new QPushButton("Back to Login", this);
@@ -68,58 +53,50 @@ ForgotPasswordWidget::ForgotPasswordWidget(UserManager *manager, QWidget *parent
     btnBack->setCursor(Qt::PointingHandCursor);
     layout->addWidget(btnBack);
 
-    connect(btnFindUser, &QPushButton::clicked, this, &ForgotPasswordWidget::onFindUserClicked);
     connect(btnReset, &QPushButton::clicked, this, &ForgotPasswordWidget::onResetClicked);
     connect(btnBack, &QPushButton::clicked, this, &ForgotPasswordWidget::backToLoginRequested);
-}
-
-void ForgotPasswordWidget::onFindUserClicked()
-{
-    QString username = leUsername->text().trimmed();
-    QString answer;
-
-    if (!userManager->getSecurityAnswer(username, answer)) {
-        QMessageBox::warning(this, "Not found", "No account with this username was found.");
-        return;
-    }
-
-    currentUsername = username;
-    currentSecurityAnswer = answer;
-
-    lblQuestion->setText("Security question: What is your favorite book or author?");
-    lblQuestion->show();
-    leAnswer->show();
-    leNewPassword->show();
-    leConfirmPassword->show();
-    btnReset->show();
+    connect(&NetworkManager::instance(), &NetworkManager::responseReceived,
+            this, &ForgotPasswordWidget::onNetworkResponse);
 }
 
 void ForgotPasswordWidget::onResetClicked()
 {
-    if (leAnswer->text().trimmed() != currentSecurityAnswer) {
-        QMessageBox::warning(this, "Incorrect", "The answer is incorrect.");
+    if (leUsername->text().trimmed().isEmpty()) {
+        QMessageBox::warning(this, "Error", "Please enter your username.");
         return;
     }
-
+    if (leAnswer->text().trimmed().isEmpty()) {
+        QMessageBox::warning(this, "Error", "Please answer the security question.");
+        return;
+    }
     if (leNewPassword->text().isEmpty() || leNewPassword->text() != leConfirmPassword->text()) {
         QMessageBox::warning(this, "Error", "Passwords do not match.");
         return;
     }
 
-    bool success = userManager->resetPassword(currentUsername, currentSecurityAnswer, leNewPassword->text());
-    if (success) {
-        QMessageBox::information(this, "Success", "Your password has been reset. Please log in.");
-        emit backToLoginRequested();
-    } else {
-        QMessageBox::warning(this, "Error", "Something went wrong.");
+    if (!NetworkManager::instance().isConnected()) {
+        QMessageBox::warning(this, "Connection Error", "Not connected to the server.");
+        return;
     }
-}
-void ForgotPasswordWidget::paintEvent(QPaintEvent *event)
-{
-    Q_UNUSED(event);
 
-    QStyleOption opt;
-    opt.initFrom(this);
-    QPainter painter(this);
-    style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
+    QJsonObject data;
+    data["username"] = leUsername->text().trimmed();
+    data["security_answer"] = leAnswer->text().trimmed();
+    data["new_password"] = leNewPassword->text();
+
+    NetworkManager::instance().sendRequest(RequestType::ResetPassword, data);
+}
+
+void ForgotPasswordWidget::onNetworkResponse(RequestType type, ResponseStatus status, const QJsonObject &data, const QString &message)
+{
+    Q_UNUSED(data);
+    if (type != RequestType::ResetPassword) return;
+
+    if (status != ResponseStatus::Success) {
+        QMessageBox::warning(this, "Error", message.isEmpty() ? "Something went wrong." : message);
+        return;
+    }
+
+    QMessageBox::information(this, "Success", "Your password has been reset. Please log in.");
+    emit backToLoginRequested();
 }

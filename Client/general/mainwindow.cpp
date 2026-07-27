@@ -19,11 +19,18 @@
 #include "adminloginwidget.h"
 #include "notificationwidget.h"
 #include <algorithm>
+#include "NetworkManager.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent), systemAdmin("admin", "admin123", "N/A")
 {
     resize(700,700);
+
+    NetworkManager::instance().connectToServer("127.0.0.1", 1234);
+
+    connect(&NetworkManager::instance(), &NetworkManager::connectionFailed, this, [this](const QString &err) {
+        QMessageBox::warning(this, "Connection Error", "Could not connect to server: " + err);
+    });
     QRect screenGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     move(
         screenGeometry.center().x() - width() / 2,
@@ -37,8 +44,8 @@ MainWindow::MainWindow(QWidget *parent)
     stack = new QStackedWidget(this);
     mainCart = &mainCartData;
 
-    RegisterPage = new Register(userManager, publisherManager, this);
-    RegisterPublisherPage = new RegisterPublisher(publisherManager, userManager, this);
+    RegisterPage = new Register(this);
+    RegisterPublisherPage = new RegisterPublisher(this);
     PublisherDashboardPage = new PublisherDashboardWidget(publisherManager, this);
 
     AdminLoginPage = new AdminLoginWidget(this);
@@ -47,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 
-    LoginPage = new login(userManager,publisherManager, this);
+    LoginPage = new login(this);
     HomePage = new home(this);
 
     CartPage = new CartWidget(mainCart, this);
@@ -70,8 +77,16 @@ MainWindow::MainWindow(QWidget *parent)
     stack->addWidget(PublisherDashboardPage);
     stack->addWidget(AdminPanelPage);
 
-    connect(LoginPage, &login::SignInSuccess, this, [this](User user) {
-        currentUser = user;
+    connect(LoginPage, &login::UserLoginSuccess, this, [this](const QJsonObject &userData) {
+        currentUser = User(userData.value("username").toString(), "", "");
+        currentUser.setId(userData.value("id").toInt());
+        currentUser.setFirstLogin(userData.value("is_first_login").toBool());
+
+        QVector<genre> genres;
+        for (const QJsonValue &v : userData.value("favorite_genres").toArray()) {
+            genres.append(stringToGenre(v.toString()));
+        }
+        currentUser.setFavoriteGenres(genres);
 
         if (currentUser.isFirstLogin()) {
             stack->setCurrentWidget(GenreSelectionPage);
@@ -79,9 +94,10 @@ MainWindow::MainWindow(QWidget *parent)
         }
 
         loadHomePageContent();
-
         stack->setCurrentWidget(HomePage);
     });
+
+
 
     connect(LoginPage, &login::GoToSignUp, this, [this]() {
         stack->setCurrentWidget(RegisterPage);
@@ -144,7 +160,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     stack->setCurrentWidget(LoginPage);
-    ForgotPasswordPage = new ForgotPasswordWidget(userManager, this);
+    ForgotPasswordPage = new ForgotPasswordWidget(this);
     stack->addWidget(ForgotPasswordPage);
 
     connect(LoginPage, &login::ForgotPasswordRequested, this, [this]() {
