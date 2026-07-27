@@ -3,10 +3,13 @@
 #include <QPainter>
 #include <QMessageBox>
 #include "home.h"
+#include <QJsonObject>
 
-login::login(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent)
-    : QWidget(parent), userManager(userManager), publisherManager(publisherManager)
+login::login(QWidget *parent)
+    : QWidget(parent)
 {
+    connect(&NetworkManager::instance(), &NetworkManager::responseReceived,
+            this, &login::onNetworkResponse);
     this->setObjectName("loginPage");
     this->setStyleSheet(
         "QWidget#loginPage {"
@@ -173,42 +176,53 @@ void login::onSignInClicked()
     QString username = leusername->text().trimmed();
     QString password = lepassword->text();
 
-    if (username.isEmpty())
-    {
+    if (username.isEmpty()) {
         QMessageBox::warning(this, "Login", "Please enter your username.");
         leusername->setFocus();
         return;
     }
 
-    if (password.isEmpty())
-    {
+    if (password.isEmpty()) {
         QMessageBox::warning(this, "Login", "Please enter your password.");
         lepassword->setFocus();
         return;
     }
 
-    User foundUser;
-    if (userManager->authenticate(username, password, foundUser)) {
-        if (foundUser.isBlocked()) {
-            QMessageBox::warning(this, "Login", "Your account has been blocked. Please contact support.");
-            return;
-        }
-        emit SignInSuccess(foundUser);
+    if (!NetworkManager::instance().isConnected()) {
+        QMessageBox::warning(this, "Connection Error", "Not connected to the server. Please try again.");
         return;
     }
 
-    Publisher foundPublisher;
-    if (publisherManager->authenticate(username, password, foundPublisher)) {
-        if (foundPublisher.isBlocked()) {
-            QMessageBox::warning(this, "Login", "Your account has been blocked. Please contact support.");
-            return;
-        }
-        emit PublisherSignInSuccess(foundPublisher);
-        return;
-    }
+    QJsonObject data;
+    data["username"] = username;
+    data["password"] = password;
 
-    QMessageBox::warning(this, "Login", "Incorrect username or password.");
+    NetworkManager::instance().sendRequest(RequestType::Login, data);
 }
+void login::onNetworkResponse(RequestType type, ResponseStatus status, const QJsonObject &data, const QString &message)
+{
+    if (type != RequestType::Login) {
+        return; // این پاسخ مال ما نیست
+    }
 
+    if (status != ResponseStatus::Success) {
+        QMessageBox::warning(this, "Login", message.isEmpty() ? "Incorrect username or password." : message);
+        return;
+    }
+
+    if (data.value("is_blocked").toBool()) {
+        QMessageBox::warning(this, "Login", "Your account has been blocked. Please contact support.");
+        return;
+    }
+
+    QString role = data.value("role").toString();
+    if (role == "User") {
+        emit UserLoginSuccess(data);
+    } else if (role == "Publisher") {
+        emit PublisherLoginSuccess(data);
+    } else {
+        QMessageBox::warning(this, "Login", "Unknown account type.");
+    }
+}
 login::~login() {
 }
