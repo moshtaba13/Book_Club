@@ -11,6 +11,9 @@
 #include <QPushButton>
 #include <QCheckBox>
 #include <QScrollArea>
+#include <QJsonArray>
+#include "networkclient.h"
+#include "modelserializer.h"
 
 
 ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
@@ -163,7 +166,7 @@ ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
     genreCardLayout->setContentsMargins(25, 20, 25, 20);
     genreCardLayout->setSpacing(10);
 
-    QLabel *genreTitle = new QLabel("Favorite Genres (exactly 3)", genreCard);
+    QLabel *genreTitle = new QLabel("Favorite Genres (1 to 3)", genreCard);
     genreTitle->setFont(QFont("Segoe UI", 15, QFont::Bold));
     genreTitle->setStyleSheet("color: #2C3E50; background: transparent;");
     genreCardLayout->addWidget(genreTitle);
@@ -290,8 +293,10 @@ void ProfileWidget::refreshPurchaseHistory()
     }
 
     QVector<Book> purchased;
-    for (const Purchase &p : currentUser.getpurchasedBooks()) {
-        purchased.append(p.getBook());
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::GetPurchasedBooks);
+    if (response.value("status").toString() == "Success") {
+        for (const QJsonValue &v : response.value("data").toObject().value("purchases").toArray())
+            purchased.append(ModelSerializer::purchaseFromJson(v.toObject()).getBook());
     }
     lblPurchaseCount->setText(QString("Total books purchased: %1").arg(purchased.size()));
 
@@ -318,13 +323,13 @@ void ProfileWidget::onSaveInfoClicked()
         return;
     }
 
-    if (userManager->isUsernameTakenByAnotherUser(newUsername, currentUser.getId())) {
-        QMessageBox::warning(this, "Error", "This username is already taken by another user.");
+    QString errorMessage;
+    if (!userManager->changeUsername(newUsername, errorMessage)) {
+        QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not update the username." : errorMessage);
         return;
     }
 
     currentUser.setUsername(newUsername);
-
 
     QMessageBox::information(this, "Saved", "Your information has been updated.");
     emit userUpdated(currentUser);
@@ -334,11 +339,6 @@ void ProfileWidget::onChangePasswordClicked()
 {
     if (leCurrentPassword->text().isEmpty()) {
         QMessageBox::warning(this, "Error", "Please enter your current password.");
-        return;
-    }
-
-    if (leCurrentPassword->text() != currentUser.getPassword()) {
-        QMessageBox::warning(this, "Error", "Current password is incorrect.");
         return;
     }
 
@@ -357,13 +357,19 @@ void ProfileWidget::onChangePasswordClicked()
         return;
     }
 
-    currentUser.setPassword(leNewPassword->text());
+    QString errorMessage;
+    bool success = userManager->changePassword(leCurrentPassword->text(), leNewPassword->text(), errorMessage);
+
     leCurrentPassword->clear();
     leNewPassword->clear();
     leConfirmPassword->clear();
 
+    if (!success) {
+        QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not update the password." : errorMessage);
+        return;
+    }
+
     QMessageBox::information(this, "Saved", "Your password has been updated.");
-    emit userUpdated(currentUser);
 }
 
 void ProfileWidget::onSaveGenresClicked()
@@ -375,8 +381,14 @@ void ProfileWidget::onSaveGenresClicked()
         }
     }
 
-    if (selected.size() != 3) {
-        QMessageBox::warning(this, "Error", "Please select exactly 3 genres.");
+    if (selected.isEmpty() || selected.size() > 3) {
+        QMessageBox::warning(this, "Error", "Please select 1 to 3 genres.");
+        return;
+    }
+
+    QString errorMessage;
+    if (!userManager->updateFavoriteGenres(selected, errorMessage)) {
+        QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not update your genres." : errorMessage);
         return;
     }
 
