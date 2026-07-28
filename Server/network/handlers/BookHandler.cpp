@@ -42,7 +42,7 @@ QJsonObject BookHandler::handleGetBooksByPublisher(const QJsonObject &data, Clie
 
     QJsonArray arr;
     for (const Book &b : books)
-        arr.append(bookToJson(b));
+        arr.append(bookToJsonFull(b));
 
     QJsonObject result;
     result["books"] = arr;
