@@ -60,3 +60,24 @@ target_link_libraries(BookClubServer PRIVATE
     Qt6::Sql
     Qt6::Widgets
 )
+
+include(GNUInstallDirs)
+
+# Installed into its own top-level "Server" folder (rather than sharing a
+# bin/ with Client) so that its NSIS Start Menu shortcut's default working
+# directory is this folder - BookClubServer resolves its SQLite database
+# and uploaded book/cover files under a "data/" directory relative to the
+# working directory it's launched from.
+install(TARGETS BookClubServer
+    BUNDLE DESTINATION .
+    RUNTIME DESTINATION Server
+    LIBRARY DESTINATION Server
+)
+
+qt_generate_deploy_app_script(
+    TARGET BookClubServer
+    OUTPUT_SCRIPT deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+
+install(SCRIPT ${deploy_script})
