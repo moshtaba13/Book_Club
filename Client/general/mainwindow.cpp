@@ -72,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
     SeeAllPage = new SeeAllBooksWidget(this);
     ReaderPage = new PdfReaderWidget(this);
     readerReturnPage = nullptr;
+    notificationsReturnPage = nullptr;
 
 
     stack->addWidget(LoginPage);
@@ -273,12 +274,19 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(HomePage, &home::notificationsRequested, this, [this]() {
+        notificationsReturnPage = HomePage;
+        NotificationPage->refreshFromServer();
+        stack->setCurrentWidget(NotificationPage);
+    });
+
+    connect(PublisherDashboardPage, &PublisherDashboardWidget::notificationsRequested, this, [this]() {
+        notificationsReturnPage = PublisherDashboardPage;
         NotificationPage->refreshFromServer();
         stack->setCurrentWidget(NotificationPage);
     });
 
     connect(NotificationPage, &NotificationWidget::backToHomeRequested, this, [this]() {
-        stack->setCurrentWidget(HomePage);
+        stack->setCurrentWidget(notificationsReturnPage ? notificationsReturnPage : HomePage);
     });
 
     connect(LoginPage, &login::PublisherSignInSuccess, this, [this](Publisher publisher) {

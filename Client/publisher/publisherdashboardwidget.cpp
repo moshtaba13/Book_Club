@@ -33,6 +33,11 @@ PublisherDashboardWidget::PublisherDashboardWidget(PublisherManager *manager, QW
     headerLayout->addWidget(lblPageTitle);
     headerLayout->addStretch();
 
+    btnNotification = new QPushButton("🔔", headerWidget);
+    btnNotification->setCursor(Qt::PointingHandCursor);
+    btnNotification->setStyleSheet("background: transparent; border: none; font-size: 19px; color: #000000;");
+    headerLayout->addWidget(btnNotification);
+
     logoutButton = new QPushButton("Log out", headerWidget);
     logoutButton->setCursor(Qt::PointingHandCursor);
     logoutButton->setStyleSheet(
@@ -214,6 +219,7 @@ PublisherDashboardWidget::PublisherDashboardWidget(PublisherManager *manager, QW
     connect(btnSaveInfo, &QPushButton::clicked, this, &PublisherDashboardWidget::onSaveInfoClicked);
     connect(btnAddBook, &QPushButton::clicked, this, &PublisherDashboardWidget::onAddBookClicked);
     connect(logoutButton, &QPushButton::clicked, this, &PublisherDashboardWidget::onLogoutClicked);
+    connect(btnNotification, &QPushButton::clicked, this, &PublisherDashboardWidget::notificationsRequested);
     connect(btnChangePassword, &QPushButton::clicked, this, &PublisherDashboardWidget::onChangePasswordClicked);
 }
 
