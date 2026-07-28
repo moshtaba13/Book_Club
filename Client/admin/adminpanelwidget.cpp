@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QStyleOption>
 #include <QPainter>
+#include "networkclient.h"
 
 AdminPanelWidget::AdminPanelWidget(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent)
     : QWidget(parent), userManager(userManager), publisherManager(publisherManager)
@@ -137,7 +138,10 @@ void AdminPanelWidget::refreshUsersList()
     }
 
     QString filter = leSearch->text().trimmed();
-    QVector<User> users = userManager->getAllUsers();
+    QString errorMessage;
+    QVector<User> users = userManager->getAllUsers(errorMessage);
+    if (!errorMessage.isEmpty())
+        QMessageBox::warning(this, "Error", errorMessage);
 
     if (users.isEmpty()) {
         QLabel *lblNone = new QLabel("No users registered yet.");
@@ -162,10 +166,8 @@ void AdminPanelWidget::refreshUsersList()
         rowLayout->setSpacing(10);
 
         QString statusText = u.isBlocked() ? "🔴 Blocked" : "🟢 Active";
-        QLabel *lblInfo = new QLabel(QString("%1 — %2 | Joined: %3 | %4")
-
-                                         .arg(u.getRegisterDate().toString("yyyy-MM-dd"))
-                                         .arg(statusText));
+        QLabel *lblInfo = new QLabel(QString("%1 — %2 | Joined: %3")
+                                         .arg(u.getUsername(), statusText, u.getRegisterDate().toString("yyyy-MM-dd")));
         lblInfo->setStyleSheet("color: #2C3E50; background: transparent;");
         rowLayout->addWidget(lblInfo, 1);
 
@@ -189,7 +191,9 @@ void AdminPanelWidget::refreshUsersList()
         rowLayout->addWidget(btnDelete);
 
         connect(btnToggleBlock, &QPushButton::clicked, this, [this, userId, currentlyBlocked]() {
-            userManager->setUserBlocked(userId, !currentlyBlocked);
+            QString errorMessage;
+            if (!userManager->setUserBlocked(userId, !currentlyBlocked, errorMessage))
+                QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not update the user's status." : errorMessage);
             refreshUsersList();
         });
 
@@ -197,7 +201,9 @@ void AdminPanelWidget::refreshUsersList()
             QMessageBox::StandardButton reply = QMessageBox::question(
                 this, "Confirm Delete", "Are you sure you want to delete this user account?");
             if (reply == QMessageBox::Yes) {
-                userManager->deleteUser(userId);
+                QString errorMessage;
+                if (!userManager->deleteUser(userId, errorMessage))
+                    QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not delete the user." : errorMessage);
                 refreshUsersList();
             }
         });
@@ -221,7 +227,10 @@ void AdminPanelWidget::refreshPublishersList()
     }
 
     QString filter = leSearch->text().trimmed();
-    QVector<Publisher> publishers = publisherManager->getAllPublishers();
+    QString errorMessage;
+    QVector<Publisher> publishers = publisherManager->getAllPublishers(errorMessage);
+    if (!errorMessage.isEmpty())
+        QMessageBox::warning(this, "Error", errorMessage);
 
     if (publishers.isEmpty()) {
         QLabel *lblNone = new QLabel("No publishers registered yet.");
@@ -246,12 +255,11 @@ void AdminPanelWidget::refreshPublishersList()
         rowLayout->setSpacing(10);
 
         QString statusText = p.isBlocked() ? "🔴 Blocked" : "🟢 Active";
-        QLabel *lblInfo = new QLabel(QString("%1 — %2 | Books: %3 | Revenue: $%4 | Joined: %5 | %6")
-
+        QLabel *lblInfo = new QLabel(QString("%1 — %2 | Books: %3 | Revenue: $%4 | Joined: %5")
+                                         .arg(p.getUsername(), statusText)
                                          .arg(p.getPublishedBooks().size())
                                          .arg(p.getTotalRevenue(), 0, 'f', 2)
-                                         .arg(p.getRegisterDate().toString("yyyy-MM-dd"))
-                                         .arg(statusText));
+                                         .arg(p.getRegisterDate().toString("yyyy-MM-dd")));
         lblInfo->setStyleSheet("color: #2C3E50; background: transparent;");
         lblInfo->setWordWrap(true);
         rowLayout->addWidget(lblInfo, 1);
@@ -276,7 +284,9 @@ void AdminPanelWidget::refreshPublishersList()
         rowLayout->addWidget(btnDelete);
 
         connect(btnToggleBlock, &QPushButton::clicked, this, [this, publisherId, currentlyBlocked]() {
-            publisherManager->setPublisherBlocked(publisherId, !currentlyBlocked);
+            QString errorMessage;
+            if (!publisherManager->setPublisherBlocked(publisherId, !currentlyBlocked, errorMessage))
+                QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not update the publisher's status." : errorMessage);
             refreshPublishersList();
         });
 
@@ -284,7 +294,9 @@ void AdminPanelWidget::refreshPublishersList()
             QMessageBox::StandardButton reply = QMessageBox::question(
                 this, "Confirm Delete", "Are you sure you want to delete this publisher account?");
             if (reply == QMessageBox::Yes) {
-                publisherManager->deletePublisher(publisherId);
+                QString errorMessage;
+                if (!publisherManager->deletePublisher(publisherId, errorMessage))
+                    QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not delete the publisher." : errorMessage);
                 refreshPublishersList();
             }
         });
@@ -308,7 +320,10 @@ void AdminPanelWidget::refreshBooksList()
     }
 
     QString filter = leSearch->text().trimmed();
-    QVector<Book> books = publisherManager->getAllBooks();
+    QString errorMessage;
+    QVector<Book> books = publisherManager->getAllBooksAdmin(errorMessage);
+    if (!errorMessage.isEmpty())
+        QMessageBox::warning(this, "Error", errorMessage);
 
     if (books.isEmpty()) {
         QLabel *lblNone = new QLabel("No books in the system yet.");
@@ -355,7 +370,9 @@ void AdminPanelWidget::refreshBooksList()
             QMessageBox::StandardButton reply = QMessageBox::question(
                 this, "Confirm Delete", "Permanently delete this book from the system?");
             if (reply == QMessageBox::Yes) {
-                publisherManager->removeBookGlobally(bookId);
+                QString errorMessage;
+                if (!publisherManager->removeBookGlobally(bookId, errorMessage))
+                    QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not delete the book." : errorMessage);
                 emit catalogChanged();
                 refreshBooksList();
             }
@@ -371,10 +388,26 @@ void AdminPanelWidget::refreshBooksList()
 
             for (const Review &r : book.getReviews()) {
                 QHBoxLayout *reviewRow = new QHBoxLayout();
-                QLabel *lblReview = new QLabel(QString("  %1 ★ — %2").arg(r.getStars()).arg(r.getComment()));
+                QLabel *lblReview = new QLabel(QString("  %1 ★ — %2 (%3)").arg(r.getStars()).arg(r.getComment(), r.getUsername()));
                 lblReview->setStyleSheet("color: #2C3E50; font-size: 11px; background: transparent;");
                 lblReview->setWordWrap(true);
                 reviewRow->addWidget(lblReview, 1);
+
+                QPushButton *btnDeleteReview = new QPushButton("Delete Review", bookBox);
+                btnDeleteReview->setCursor(Qt::PointingHandCursor);
+                btnDeleteReview->setStyleSheet(
+                    "QPushButton { background-color: #FF69B4; color: white; border: none; border-radius: 6px; padding: 2px 8px; font-size: 10px; }"
+                    "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+                    );
+                reviewRow->addWidget(btnDeleteReview);
+
+                int reviewUserId = r.getUserId();
+                connect(btnDeleteReview, &QPushButton::clicked, this, [this, bookId, reviewUserId]() {
+                    QString errorMessage;
+                    if (!publisherManager->deleteReviewAdmin(bookId, reviewUserId, errorMessage))
+                        QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not delete the review." : errorMessage);
+                    refreshBooksList();
+                });
 
                 bookBoxLayout->addLayout(reviewRow);
             }
