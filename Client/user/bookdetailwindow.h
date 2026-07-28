@@ -18,6 +18,13 @@ public:
     explicit BookDetailWidget(Cart *cart, User *user, QWidget *parent = nullptr);
     void loadBook(const Book &book);
 
+    // Downloads the PDF for bookId (must already be purchased) and opens it
+    // with the system's default PDF viewer. Shows a warning dialog on
+    // failure. Static so it can be called directly from anywhere (e.g. a
+    // "Read" button in the personal library) without needing a loaded
+    // BookDetailWidget instance.
+    static void openBookFile(int bookId, QWidget *parentForDialogs);
+
 signals:
     void backToHomeRequested();
 
@@ -26,14 +33,17 @@ protected:
 
 private slots:
     void onAddToCartClicked();
+    void onReadClicked();
     void onBackClicked();
     void onSubmitReviewClicked();
 
 private:
     QString genreToString(genre g) const;
     void refreshReviews();
+    void resetReviewForm();
 
     User *currentUserPtr;
+    bool editingReview = false;
     QPushButton *saveButton;
 
     Cart *mainCart;
@@ -48,6 +58,7 @@ private:
     QLabel *originalPriceLabel;
     QLabel *ratingLabel;
     QPushButton *addToCartButton;
+    QPushButton *readButton;
     QPushButton *backButton;
 
     QVBoxLayout *reviewsListLayout;
