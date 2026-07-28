@@ -6,7 +6,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include "UserManager.h"
-#include "PublisherManager.h"
+#include "publishermanager.h"
 #include "Book.h"
 
 class AdminPanelWidget : public QWidget
