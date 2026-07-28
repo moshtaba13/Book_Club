@@ -18,6 +18,7 @@ public:
 signals:
     void backToLoginRequested();
     void catalogChanged();
+    void notificationsRequested();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -38,6 +39,7 @@ private:
     QVector<Book> publishedBooks;
 
     QPushButton *logoutButton;
+    QPushButton *btnNotification;
 
     // اطلاعات حساب
     QLineEdit *leUsername;
