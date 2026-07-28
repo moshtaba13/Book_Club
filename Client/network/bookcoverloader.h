@@ -10,6 +10,7 @@ class BookCoverLoader
 public:
     static BookCoverLoader& instance();
 
+    QPixmap cover(int bookId);
 
     void clearCache();
 
