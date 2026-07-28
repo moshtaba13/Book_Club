@@ -1,5 +1,8 @@
 #include "Database.h"
 #include <QDir>
+#include <QDateTime>
+
+#include "managers/AuthManager.h"
 
 Database& Database::instance() {
     static Database instance;
@@ -23,7 +26,7 @@ bool Database::connect(const QString &dbPath) {
     pragmaQuery.exec("PRAGMA foreign_keys = ON;");
 
     qDebug() << "Database connected successfully.";
-    return createMembersTable()
+    bool ok = createMembersTable()
         && createBooksTable()
         && createPurchasesTable()
         && createCartsTable()
@@ -32,6 +35,11 @@ bool Database::connect(const QString &dbPath) {
         && createShelvesTable()
         && createShelfBooksTable()
         && createNotificationsTable();
+
+    if (ok)
+        ensureDefaultAdmin();
+
+    return ok;
 }
 
 bool Database::isConnected() const{
@@ -219,4 +227,35 @@ bool Database::createNotificationsTable()
     if (!ok)
         qDebug() << "createNotificationsTable Error:" << query.lastError().text();
     return ok;
+}
+
+bool Database::ensureDefaultAdmin()
+{
+    QSqlQuery check(db);
+    check.prepare("SELECT COUNT(*) FROM members WHERE role = 'Admin'");
+    if (check.exec() && check.next() && check.value(0).toInt() > 0)
+        return true;
+
+    QString salt = AuthManager::instance().generateSalt();
+
+    QSqlQuery insert(db);
+    insert.prepare(
+        "INSERT INTO members "
+        "(username, password, salt, role, security_answer, is_blocked, is_first_login, favorite_genres, total_revenue, register_date) "
+        "VALUES "
+        "(:username, :password, :salt, 'Admin', :answer, 0, 0, '[]', 0.0, :date)"
+    );
+    insert.bindValue(":username", AuthManager::instance().encrypt("admin"));
+    insert.bindValue(":password", AuthManager::instance().hashPassword("admin123", salt));
+    insert.bindValue(":salt", salt);
+    insert.bindValue(":answer", AuthManager::instance().encrypt("N/A"));
+    insert.bindValue(":date", QDateTime::currentDateTime().toString(Qt::ISODate));
+
+    if (!insert.exec()) {
+        qDebug() << "ensureDefaultAdmin Error:" << insert.lastError().text();
+        return false;
+    }
+
+    qDebug() << "Default admin account created (username: admin, password: admin123).";
+    return true;
 }

@@ -24,6 +24,7 @@ private:
     bool createShelvesTable();
     bool createShelfBooksTable();
     bool createNotificationsTable();
+    bool ensureDefaultAdmin();
 
 public:
     static Database& instance();
