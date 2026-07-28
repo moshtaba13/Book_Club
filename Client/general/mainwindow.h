@@ -15,12 +15,12 @@
 #include "profilewidget.h"
 #include "personallibrarywidget.h"
 #include "registerpublisher.h"
-#include "Admin.h"
 #include "adminloginwidget.h"
 #include "notificationwidget.h"
 #include "publisherdashboardwidget.h"
-#include "PublisherManager.h"
+#include "publishermanager.h"
 #include "adminpanelwidget.h"
+#include "seeallbookswidget.h"
 
 class MainWindow : public QWidget
 {
@@ -48,9 +48,9 @@ private:
     PublisherManager *publisherManager;
     PublisherDashboardWidget *PublisherDashboardPage;
     RegisterPublisher *RegisterPublisherPage;
-    Admin systemAdmin;
     AdminLoginWidget *AdminLoginPage;
     NotificationWidget *NotificationPage;
     AdminPanelWidget *AdminPanelPage;
+    SeeAllBooksWidget *SeeAllPage;
 };
 #endif // MAINWINDOW_H
