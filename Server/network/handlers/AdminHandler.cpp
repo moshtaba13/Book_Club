@@ -32,7 +32,7 @@ QJsonObject AdminHandler::handleGetAllUsers(ClientHandler *client)
 
     QJsonArray arr;
     for (const auto &m : members)
-        arr.append(memberToJson(*m));
+        arr.append(memberToJsonFull(*m));
 
     QJsonObject result;
     result["users"] = arr;
@@ -49,7 +49,7 @@ QJsonObject AdminHandler::handleGetAllPublishers(ClientHandler *client)
 
     QJsonArray arr;
     for (const auto &m : members)
-        arr.append(memberToJson(*m));
+        arr.append(memberToJsonFull(*m));
 
     QJsonObject result;
     result["publishers"] = arr;
@@ -236,7 +236,7 @@ QJsonObject AdminHandler::handleDeleteReviewAdmin(const QJsonObject &data, Clien
     if (!isAdmin(client))
         return unauthorized();
 
-    if (!BookRepository::instance().removeReview(data["book_id"].toInt(), client->currentUser()->getId()))
+    if (!BookRepository::instance().removeReview(data["book_id"].toInt(), data["user_id"].toInt()))
         return failure("Error deleting review");
 
     return success();
