@@ -12,7 +12,7 @@ constexpr int kCardWidth = 130;
 constexpr int kCardHeight = 185;
 constexpr int kCoverWidth = 130;
 constexpr int kCoverHeight = 150;
-constexpr int kCoverCornerRadius = 12; // Matches card border-radius
+constexpr int kCoverCornerRadius = 12;
 
 QPixmap fitCoverToFrame(const QPixmap &source, const QSize &targetSize)
 {
@@ -70,18 +70,18 @@ QPushButton *BookCardWidget::create(const Book &book, QWidget *parent, const QSt
         "}"
         );
 
-    // Create a vertical layout inside the button to stack cover on top of text
+
     QVBoxLayout *layout = new QVBoxLayout(card);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    // 1. Top Cover Label
+
     QLabel *coverLabel = new QLabel(card);
     coverLabel->setFixedSize(kCoverWidth, kCoverHeight);
     coverLabel->setAttribute(Qt::WA_TransparentForMouseEvents); // Clicks pass through to the button
     coverLabel->setStyleSheet("background: transparent; border: none;");
 
-    // 2. Bottom Title Label
+
     QLabel *titleLabel = new QLabel(card);
     titleLabel->setFixedHeight(kCardHeight - kCoverHeight); // 35px height
     titleLabel->setAlignment(Qt::AlignCenter);

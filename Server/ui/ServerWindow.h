@@ -41,9 +41,7 @@ private:
 
     double getCpuUsage();
     double getMemoryUsage();
-    void updateHealthStatus(int onlineClients,
-                            double cpu,
-                            double memory);
+    void updateHealthStatus(int onlineClients,double cpu,double memory);
 
     Ui::ServerWindow *ui;
     QTimer *m_statsTimer;

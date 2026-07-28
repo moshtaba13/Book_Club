@@ -19,8 +19,6 @@ public:
 
 signals:
     void backToHomeRequested();
-    // title is passed along so MainWindow can label the in-app reader
-    // without having to look the book back up.
     void readRequested(int bookId, const QString &title);
 
 protected:

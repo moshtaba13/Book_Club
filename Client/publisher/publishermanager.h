@@ -5,9 +5,7 @@
 #include <QString>
 #include "Publisher.h"
 
-// Thin wrapper around NetworkClient for publisher/book/catalog operations.
-// Holds no local state itself anymore - the server is the single source of
-// truth for the book catalog and publisher accounts.
+
 class PublisherManager
 {
 public:
@@ -29,9 +27,7 @@ public:
     QVector<Book> getTopSellingBooks(QString &errorOut) const;
     QVector<Book> searchBooks(const QString &keyword, QString &errorOut) const;
 
-    // coverFilePath/pdfFilePath are local filesystem paths chosen through a
-    // file picker; pass empty strings to leave an existing file untouched
-    // when editing.
+
     bool addBook(Book &book, const QString &coverFilePath, const QString &pdfFilePath, QString &errorOut);
     bool editBook(const Book &book, const QString &coverFilePath, const QString &pdfFilePath, QString &errorOut);
     bool applyDiscount(int bookId, double discount, QString &errorOut);

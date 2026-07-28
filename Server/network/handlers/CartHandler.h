@@ -12,9 +12,7 @@ private:
     static QJsonObject handleGetCart(ClientHandler *client);
     static QJsonObject handleCheckout(ClientHandler *client);
 public:
-    static QJsonObject handle(RequestType type,
-                              const QJsonObject &data,
-                              ClientHandler *client);
+    static QJsonObject handle(RequestType type, const QJsonObject &data, ClientHandler *client);
 
 };
 

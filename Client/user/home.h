@@ -37,21 +37,14 @@ signals:
     void searchRequested(const QString &query);
     void notificationsRequested();
     void seeAllRequested(const QString &sectionTitle, const QVector<Book> &books);
-    // Genres row overflow - a list of highlight books (one per genre),
-    // shown differently from a plain book list (see seeAllRequested).
+
     void seeAllGenresRequested(const QVector<Book> &highlightPerGenre);
-    // Emitted when a Genres-row card (or a card in the genre "See all"
-    // grid) is clicked - g is the genre that card represents.
+
     void genreClicked(genre g);
 private:
     QWidget *createBookWidget(const Book &book, QWidget *parent);
     QWidget *createGenreWidget(const Book &highlightBook, QWidget *parent);
 
-    // Full lists behind each section - the row itself only ever shows the
-    // first few, "See all" opens the rest of whichever list is here.
-    // genresBooksAll holds one "most popular" highlight book per genre
-    // (its own genre() tells you which genre it represents), not a list
-    // of books within a single genre.
     QVector<Book> genresBooksAll;
     QVector<Book> featuredBooksAll;
     QVector<Book> recommendedBooksAll;

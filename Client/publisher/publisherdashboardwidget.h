@@ -41,7 +41,7 @@ private:
     QPushButton *logoutButton;
     QPushButton *btnNotification;
 
-    // اطلاعات حساب
+
     QLineEdit *leUsername;
 
     QPushButton *btnSaveInfo;
@@ -51,11 +51,11 @@ private:
     QLineEdit *leConfirmPassword;
     QPushButton *btnChangePassword;
 
-    // لیست کتاب‌ها
+
     QVBoxLayout *bookListLayout;
     QPushButton *btnAddBook;
 
-    // آمار
+
     QLabel *lblTotalBooks;
     QLabel *lblTotalRevenue;
     QVBoxLayout *bestSellersLayout;

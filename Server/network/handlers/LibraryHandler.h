@@ -7,9 +7,7 @@
 class LibraryHandler : public BaseHandler
 {
 public:
-    static QJsonObject handle(RequestType type,
-                              const QJsonObject &data,
-                              ClientHandler *client);
+    static QJsonObject handle(RequestType type,const QJsonObject &data,ClientHandler *client);
 
 private:
     static QJsonObject handleGetPurchasedBooks(ClientHandler *client);

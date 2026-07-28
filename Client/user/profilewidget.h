@@ -41,23 +41,22 @@ private:
 
     QPushButton *backButton;
 
-    // اطلاعات حساب
     QLineEdit *leUsername;
 
     QPushButton *btnSaveInfo;
 
-    // تغییر رمز عبور
+
     QLineEdit *leNewPassword;
     QLineEdit *leConfirmPassword;
     QPushButton *btnChangePassword;
     QLineEdit *leCurrentPassword;
 
-    // ژانرهای مورد علاقه
+
     QVector<QCheckBox*> genreCheckboxes;
     QVector<genre> genreValues;
     QPushButton *btnSaveGenres;
 
-    // تاریخچه خرید
+
     QLabel *lblPurchaseCount;
     QVBoxLayout *purchaseHistoryLayout;
 

@@ -30,10 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
         screenGeometry.center().y() - height() / 2
         );
 
-    // Defaults to 127.0.0.1:1234 (server on the same machine); set
-    // BOOKCLUB_SERVER_HOST / BOOKCLUB_SERVER_PORT to point this client at a
-    // server running on a different machine (e.g. testing a Windows client
-    // against a Linux server, or vice versa).
+
     QString serverHost = qEnvironmentVariable("BOOKCLUB_SERVER_HOST", "127.0.0.1");
     quint16 serverPort = static_cast<quint16>(qEnvironmentVariableIntValue("BOOKCLUB_SERVER_PORT") == 0
                                                   ? 1234
@@ -331,8 +328,7 @@ void MainWindow::loadHomePageContent()
     QVector<Book> freeBooks = publisherManager->getFreeBooks(errorMessage);
     QVector<Book> bestSellers = publisherManager->getTopSellingBooks(errorMessage);
 
-    // Genres row: one "most popular" (highest rated, ties broken by sales)
-    // book per genre - genres with no books yet are simply skipped.
+
     QVector<Book> genreHighlights;
     for (genre g : allGenres()) {
         const Book *best = nullptr;

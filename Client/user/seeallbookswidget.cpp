@@ -23,7 +23,7 @@ SeeAllBooksWidget::SeeAllBooksWidget(QWidget *parent) : QWidget(parent)
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // نوار هدر بالا - همون پالت و همون ارتفاع هدر صفحه هوم
+
     headerWidget = new QWidget(this);
     headerWidget->setMinimumHeight(75);
     headerWidget->setMaximumHeight(75);
@@ -60,14 +60,14 @@ SeeAllBooksWidget::SeeAllBooksWidget(QWidget *parent) : QWidget(parent)
 
     headerLayout->addStretch(1);
 
-    // یه فاصله‌گیر هم‌عرض دکمه‌ی برگشت تا عنوان دقیقاً وسط بمونه
+
     QWidget *spacer = new QWidget(headerWidget);
     spacer->setFixedWidth(70);
     headerLayout->addWidget(spacer);
 
     mainLayout->addWidget(headerWidget);
 
-    // منطقه اسکرول‌شونده
+
     scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);

@@ -7,7 +7,7 @@
 Register::Register(UserManager *userManager, QWidget *parent)
     : QWidget(parent), userManager(userManager)
 {
-    // ۱. تنظیم نام آبجکت برای اعمال پس‌زمینه کرمی یکدست روی کل صفحه
+
     this->setObjectName("signUpPage");
     this->setStyleSheet(
         "QWidget#signUpPage {"
@@ -20,11 +20,11 @@ Register::Register(UserManager *userManager, QWidget *parent)
         "}"
         );
 
-    // ۲. لایوت شبکه اصلی برای مرکزچین کردن کارت
+
     QGridLayout *mainLayout = new QGridLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    // ۳. ساخت کارت اصلی (signupframe)
+
     signupframe = new QFrame(this);
     signupframe->setObjectName("signUpFrame");
     signupframe->setMinimumSize(360, 560);
@@ -76,13 +76,13 @@ Register::Register(UserManager *userManager, QWidget *parent)
         "QPushButton#signUpBtn:pressed { background-color: #FFB6C1; }"
         );
 
-    // ۴. لایوت عمودی داخل کارت
+
     QVBoxLayout *frameLayout = new QVBoxLayout(signupframe);
     frameLayout->setContentsMargins(35, 35, 35, 35);
     frameLayout->setSpacing(12);
     frameLayout->setAlignment(Qt::AlignCenter);
 
-    // ۵. عناوین بالای فرم
+
     lblwelcome = new QLabel("Welcome to Book Club!", signupframe);
     lblwelcome->setFont(QFont("Segoe UI", 18, QFont::Bold));
     lblwelcome->setAlignment(Qt::AlignCenter);
@@ -95,7 +95,7 @@ Register::Register(UserManager *userManager, QWidget *parent)
 
     frameLayout->addSpacing(5);
 
-    // ۶. فیلد Username
+
     lblusername = new QLabel("Username", signupframe);
     lblusername->setFont(QFont("Segoe UI", 9, QFont::DemiBold));
     frameLayout->addWidget(lblusername);
@@ -105,9 +105,7 @@ Register::Register(UserManager *userManager, QWidget *parent)
     leusername->setMinimumHeight(38);
     frameLayout->addWidget(leusername);
 
-    // ۷. فیلد Email
 
-    // ۸. فیلد Password
     lblpassword = new QLabel("Password", signupframe);
     lblpassword->setFont(QFont("Segoe UI", 9, QFont::DemiBold));
     frameLayout->addWidget(lblpassword);
@@ -118,7 +116,7 @@ Register::Register(UserManager *userManager, QWidget *parent)
     lepassword->setMinimumHeight(38);
     frameLayout->addWidget(lepassword);
 
-    // ۹. فیلد Confirm Password
+
     lblconfirmpassword = new QLabel("Confirm Password", signupframe);
     lblconfirmpassword->setFont(QFont("Segoe UI", 9, QFont::DemiBold));
     frameLayout->addWidget(lblconfirmpassword);
@@ -129,7 +127,6 @@ Register::Register(UserManager *userManager, QWidget *parent)
     leconfirmpassword->setMinimumHeight(38);
     frameLayout->addWidget(leconfirmpassword);
 
-    // ۹-۱. فیلد سؤال امنیتی (برای فراموشی رمز عبور در آینده)
     lblsecurityquestion = new QLabel("What is your favorite book or author?", signupframe);
     lblsecurityquestion->setFont(QFont("Segoe UI", 9, QFont::DemiBold));
     lblsecurityquestion->setWordWrap(true);
@@ -140,13 +137,13 @@ Register::Register(UserManager *userManager, QWidget *parent)
     lesecurityanswer->setMinimumHeight(38);
     frameLayout->addWidget(lesecurityanswer);
 
-    // ۱۰. چک‌باکس قوانین
+
     chkterms = new QCheckBox("I agree to the Terms", signupframe);
     frameLayout->addWidget(chkterms);
 
     frameLayout->addSpacing(5);
 
-    // ۱۱. دکمه اصلی Sign Up
+
     btnsignup = new QPushButton("Sign Up", signupframe);
     btnsignup->setObjectName("signUpBtn");
     btnsignup->setMinimumHeight(42);
@@ -155,7 +152,7 @@ Register::Register(UserManager *userManager, QWidget *parent)
 
     frameLayout->addSpacing(5);
 
-    // ۱۲. بخش فوتر برای هدایت به لاگین
+
     QHBoxLayout *signinLayout = new QHBoxLayout();
     signinLayout->setAlignment(Qt::AlignCenter);
     lblsignin = new QLabel("Already have an account?", signupframe);
@@ -168,12 +165,11 @@ Register::Register(UserManager *userManager, QWidget *parent)
     signinLayout->addWidget(btnsignin);
     frameLayout->addLayout(signinLayout);
 
-    // ۱۳. اتصال دکمه سوییچ به سیگنال خروجی کلاس
     connect(btnsignin, &QPushButton::clicked, this, [=]() {
         emit goToLogin();
     });
 
-    // ۱۴. قرار دادن کارت در مرکز صفحه
+
     mainLayout->addWidget(signupframe, 1, 1);
     mainLayout->setRowStretch(0, 1);
     mainLayout->setRowStretch(2, 1);
@@ -186,46 +182,37 @@ Register::Register(UserManager *userManager, QWidget *parent)
 }
 
 void Register::onSignUpClicked() {
-    // ۱. بررسی خالی بودن نام کاربری
+
     if (leusername->text().isEmpty()) {
         QMessageBox::warning(this, "Validation Error", "Please enter a username.");
         return;
     }
 
-    // ۲. بررسی خالی بودن ایمیل
-
-
-    // ۳. بررسی خالی بودن رمز عبور
     if (lepassword->text().isEmpty()) {
         QMessageBox::warning(this, "Validation Error", "Please enter a password.");
         return;
     }
 
-    // ۴. بررسی خالی بودن تاییدیه رمز عبور
     if (leconfirmpassword->text().isEmpty()) {
         QMessageBox::warning(this, "Validation Error", "Please confirm your password.");
         return;
     }
 
-    // ۵. بررسی تطابق رمز عبور و تاییدیه آن
     if (lepassword->text() != leconfirmpassword->text()) {
         QMessageBox::warning(this, "Validation Error", "Passwords do not match. Please try again.");
         return;
     }
 
-    // ۶. بررسی خالی بودن پاسخ سؤال امنیتی
     if (lesecurityanswer->text().isEmpty()) {
         QMessageBox::warning(this, "Validation Error", "Please answer the security question.");
         return;
     }
 
-    // ۷. بررسی تایید قوانین و شروط
     if (!chkterms->isChecked()) {
         QMessageBox::warning(this, "Validation Error", "You must agree to the Terms and Conditions to register.");
         return;
     }
 
-    // ۸. ثبت‌نام کاربر جدید از طریق سرور
     QString errorMessage;
     bool success = userManager->registerUser(
         leusername->text().trimmed(),
@@ -239,7 +226,6 @@ void Register::onSignUpClicked() {
         return;
     }
 
-    // ۹. نمایش پیام موفقیت و شلیک سیگنال
     QMessageBox::information(this, "Success", "Your account has been created successfully!");
 
     emit SignUpSuccess();

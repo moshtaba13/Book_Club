@@ -21,8 +21,7 @@ PdfReaderWidget::PdfReaderWidget(QWidget *parent)
     outerLayout->setContentsMargins(0, 0, 0, 0);
     outerLayout->setSpacing(0);
 
-    // Header: back button, book title, page navigation and zoom controls -
-    // styled to match BookDetailWidget's header.
+
     QWidget *headerWidget = new QWidget(this);
     headerWidget->setMinimumHeight(75);
     headerWidget->setMaximumHeight(75);
@@ -67,8 +66,7 @@ PdfReaderWidget::PdfReaderWidget(QWidget *parent)
     headerLayout->addWidget(zoomOutButton);
     headerLayout->addWidget(zoomInButton);
 
-    // Extra gap so the zoom group and the page-navigation group read as two
-    // clearly separate clusters instead of one crowded row.
+
     headerLayout->addSpacing(18);
 
     prevPageButton = new QPushButton("‹ Prev", headerWidget);
@@ -118,7 +116,6 @@ PdfReaderWidget::PdfReaderWidget(QWidget *parent)
 
     outerLayout->addWidget(headerWidget);
 
-    // Body: the actual PDF page view.
     document = new QPdfDocument(this);
 
     pdfView = new QPdfView(this);
@@ -141,8 +138,7 @@ PdfReaderWidget::PdfReaderWidget(QWidget *parent)
 
 void PdfReaderWidget::openBook(int bookId, const QString &title)
 {
-    // If a different book was already open, make sure its position is
-    // saved before we swap the document out from under it.
+
     if (currentBookId != -1 && currentBookId != bookId)
         saveCurrentPage();
 
@@ -175,8 +171,7 @@ void PdfReaderWidget::openBook(int bookId, const QString &title)
     titleLabel->setText(title);
 
     document->load(filePath);
-    // QPdfDocument::load() resolves synchronously for local files, but wait
-    // on the status signal too in case a given Qt build makes it async.
+
     if (document->status() == QPdfDocument::Status::Loading) {
         QEventLoop loop;
         connect(document, &QPdfDocument::statusChanged, &loop, &QEventLoop::quit);
@@ -192,7 +187,6 @@ void PdfReaderWidget::openBook(int bookId, const QString &title)
     pageSpinBox->setMaximum(document->pageCount());
     pageCountLabel->setText(QString("/ %1").arg(document->pageCount()));
 
-    // Resume from the last page read, if the server has one on record.
     QJsonObject pageResponse = NetworkClient::instance().sendRequest(RequestType::GetLastReadPage, data);
     int lastPage = 0;
     if (pageResponse.value("status").toString() == "Success")

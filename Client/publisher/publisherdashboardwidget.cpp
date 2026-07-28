@@ -19,7 +19,7 @@ PublisherDashboardWidget::PublisherDashboardWidget(PublisherManager *manager, QW
     outerLayout->setContentsMargins(0, 0, 0, 0);
     outerLayout->setSpacing(0);
 
-    // هدر
+
     QWidget *headerWidget = new QWidget(this);
     headerWidget->setMinimumHeight(75);
     headerWidget->setMaximumHeight(75);
@@ -48,7 +48,7 @@ PublisherDashboardWidget::PublisherDashboardWidget(PublisherManager *manager, QW
 
     outerLayout->addWidget(headerWidget);
 
-    // بدنه اسکرول‌شونده
+
     QScrollArea *scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
@@ -63,7 +63,7 @@ PublisherDashboardWidget::PublisherDashboardWidget(PublisherManager *manager, QW
     mainLayout->setContentsMargins(30, 30, 30, 30);
     mainLayout->setSpacing(20);
 
-    // ===== کارت ۱: اطلاعات حساب =====
+
     QFrame *infoCard = new QFrame(scrollWidget);
     infoCard->setStyleSheet("background-color: #F2E8DF; border-radius: 20px;");
     QVBoxLayout *infoLayout = new QVBoxLayout(infoCard);
@@ -142,7 +142,7 @@ PublisherDashboardWidget::PublisherDashboardWidget(PublisherManager *manager, QW
 
     mainLayout->addWidget(passCard);
 
-    // ===== کارت ۲: مدیریت کتاب‌ها =====
+
     QFrame *booksCard = new QFrame(scrollWidget);
     booksCard->setStyleSheet("background-color: rgba(210, 235, 255, 170); border-radius: 20px;");
     QVBoxLayout *booksCardLayout = new QVBoxLayout(booksCard);

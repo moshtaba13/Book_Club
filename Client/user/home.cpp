@@ -7,8 +7,7 @@
 #include "protocol.h"
 
 namespace {
-// Every home-page row shows at most this many books; "See all" is how the
-// rest of the list gets seen.
+
 constexpr int kHomeSectionLimit = 4;
 }
 
@@ -80,7 +79,7 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     mainLayout->addWidget(headerWidget);
 
-    // منطقه اسکرول‌شونده
+
     scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
@@ -95,7 +94,7 @@ home::home(QWidget *parent) : QWidget(parent) {
     scrollLayout->setContentsMargins(20, 20, 20, 20);
     scrollLayout->setSpacing(25);
 
-    // الف) بخش ژانرها (Genres)
+
     genresFrame = new QFrame(scrollWidget);
     genresFrame->setStyleSheet("background-color: rgba(253, 246, 238, 180); border-radius: 20px;");
     QVBoxLayout *genresLayout = new QVBoxLayout(genresFrame);
@@ -123,7 +122,7 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     scrollLayout->addWidget(genresFrame);
 
-    // ب) بخش ویژه (Featured Books)
+
     featuredFrame = new QFrame(scrollWidget);
     featuredFrame->setStyleSheet("background-color: rgba(210, 235, 255, 170); border-radius: 20px;");
     QVBoxLayout *featuredLayout = new QVBoxLayout(featuredFrame);
@@ -151,7 +150,6 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     scrollLayout->addWidget(featuredFrame);
 
-    // ج) بخش پیشنهادی (Recommended for u)
     recommendedFrame = new QFrame(scrollWidget);
     recommendedFrame->setStyleSheet("background-color: #FFD1DC; border-radius: 20px;");
     QVBoxLayout *recommendedLayout = new QVBoxLayout(recommendedFrame);
@@ -179,7 +177,7 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     scrollLayout->addWidget(recommendedFrame);
 
-    // د) بخش جدیدترین‌ها (New Releases)
+
     newReleasesFrame = new QFrame(scrollWidget);
     newReleasesFrame->setStyleSheet("background-color: rgba(255, 192, 159, 195); border-radius: 20px;");
     QVBoxLayout *newReleasesLayout = new QVBoxLayout(newReleasesFrame);
@@ -207,7 +205,6 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     scrollLayout->addWidget(newReleasesFrame);
 
-    // هـ) بخش پرفروش‌ها (Best Sellers)
     bestSellersFrame = new QFrame(scrollWidget);
     bestSellersFrame->setStyleSheet("background-color: rgba(210, 235, 255, 170); border-radius: 20px;");
     QVBoxLayout *bestSellersLayout = new QVBoxLayout(bestSellersFrame);
@@ -235,7 +232,7 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     scrollLayout->addWidget(bestSellersFrame);
 
-    // و) بخش کتاب‌های رایگان (Free Books)
+
     freeBooksFrame = new QFrame(scrollWidget);
     freeBooksFrame->setStyleSheet("background-color: #FFD1DC; border-radius: 20px;");
     QVBoxLayout *freeBooksLayout = new QVBoxLayout(freeBooksFrame);
@@ -263,7 +260,7 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     scrollLayout->addWidget(freeBooksFrame);
 
-    // ز) نتایج جستجو (مخفی، فقط وقتی جستجو انجام بشه نشون داده می‌شه)
+
     searchResultsFrame = new QFrame(scrollWidget);
     searchResultsFrame->setStyleSheet("background-color: rgba(253, 246, 238, 180); border-radius: 20px;");
     QVBoxLayout *searchResultsLayout = new QVBoxLayout(searchResultsFrame);
