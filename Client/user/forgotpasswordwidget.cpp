@@ -76,15 +76,15 @@ ForgotPasswordWidget::ForgotPasswordWidget(UserManager *manager, QWidget *parent
 void ForgotPasswordWidget::onFindUserClicked()
 {
     QString username = leUsername->text().trimmed();
-    QString answer;
-
-    if (!userManager->getSecurityAnswer(username, answer)) {
-        QMessageBox::warning(this, "Not found", "No account with this username was found.");
+    if (username.isEmpty()) {
+        QMessageBox::warning(this, "Error", "Please enter your username.");
         return;
     }
 
+    // The security answer can only be verified server-side (it's stored
+    // encrypted, never sent to the client), so both the answer and the new
+    // password are collected here and checked together by ResetPassword.
     currentUsername = username;
-    currentSecurityAnswer = answer;
 
     lblQuestion->setText("Security question: What is your favorite book or author?");
     lblQuestion->show();
@@ -96,8 +96,8 @@ void ForgotPasswordWidget::onFindUserClicked()
 
 void ForgotPasswordWidget::onResetClicked()
 {
-    if (leAnswer->text().trimmed() != currentSecurityAnswer) {
-        QMessageBox::warning(this, "Incorrect", "The answer is incorrect.");
+    if (leAnswer->text().trimmed().isEmpty()) {
+        QMessageBox::warning(this, "Error", "Please answer the security question.");
         return;
     }
 
@@ -106,12 +106,15 @@ void ForgotPasswordWidget::onResetClicked()
         return;
     }
 
-    bool success = userManager->resetPassword(currentUsername, currentSecurityAnswer, leNewPassword->text());
+    QString errorMessage;
+    bool success = userManager->resetPassword(
+        currentUsername, leAnswer->text().trimmed(), leNewPassword->text(), errorMessage);
+
     if (success) {
         QMessageBox::information(this, "Success", "Your password has been reset. Please log in.");
         emit backToLoginRequested();
     } else {
-        QMessageBox::warning(this, "Error", "Something went wrong.");
+        QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Something went wrong." : errorMessage);
     }
 }
 void ForgotPasswordWidget::paintEvent(QPaintEvent *event)
