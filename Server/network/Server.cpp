@@ -16,20 +16,27 @@ bool Server::startServer(int port)
         emit logMessage("Database connection failed!");
         return false;
     }
-.
+
+    // Allow overriding the port the same way the client can point at a
+    // custom host/port, instead of only ever trying the hardcoded default.
     bool portOverridden = false;
     int envPort = qEnvironmentVariableIntValue("BOOKCLUB_SERVER_PORT", &portOverridden);
     if (portOverridden && envPort > 0)
         port = envPort;
 
     if (!listen(QHostAddress::Any, port)) {
+        // errorString() tells you *why* the bind failed - almost always
+        // "Address already in use" (another server instance, or a previous
+        // run that didn't shut down cleanly, is still holding the port) but
+        // could also be a permissions/firewall issue. Surfacing it saves a
+        // lot of guessing versus the old generic message.
         emit logMessage("Server failed to start on port "
-                       + QString::number(port) + ": " + errorString());
+                        + QString::number(port) + ": " + errorString());
         return false;
     }
 
     emit logMessage("Server started on port "
-                   + QString::number(port));
+                    + QString::number(port));
     return true;
 }
 
