@@ -65,6 +65,12 @@ QJsonObject ProfileHandler::handleUpdateFavoriteGenres(const QJsonObject &data,C
 
     if (!UserManager::instance().updateFavoriteGenres(client->currentUser()->getId(), genres))
         return failure("Error updating genres");
+    
+    User *user = dynamic_cast<User*>(client->currentUser().get());
+    if (user && user->isFirstLogin()) {
+        MemberRepository::instance().updateFirstLogin(user->getId(), false);
+        user->setFirstLogin(false);
+    }
 
     return success();
 }

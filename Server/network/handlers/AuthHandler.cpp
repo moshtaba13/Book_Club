@@ -8,11 +8,12 @@ QJsonObject AuthHandler::handleLogin(const QJsonObject &data, ClientHandler *cli
     QString username = data["username"].toString();
     QString password = data["password"].toString();
     
-    if (client->currentUser()->isBlocked())
-        return failure("Your account is blocked");
     auto member = AuthManager::instance().login(username, password);
     if (!member)
         return notFound("invalid password or username");
+    
+    if (member->isBlocked())
+        return failure("Your account is blocked");
 
     client->setCurrentUser(member);
     return success(memberToJsonFull(*member));
