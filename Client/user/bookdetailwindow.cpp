@@ -9,6 +9,23 @@
 #include "modelserializer.h"
 #include "bookcoverloader.h"
 
+namespace {
+// Scales the cover so it completely fills targetSize (no empty bars),
+// cropping whatever overhangs on the long side - equivalent to CSS's
+// "object-fit: cover". Keeps the cover perfectly sized to coverLabel's
+// frame regardless of the image's own aspect ratio.
+QPixmap fitCoverToFrame(const QPixmap &source, const QSize &targetSize)
+{
+    if (source.isNull() || targetSize.isEmpty())
+        return source;
+
+    QPixmap scaled = source.scaled(targetSize, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    int x = (scaled.width() - targetSize.width()) / 2;
+    int y = (scaled.height() - targetSize.height()) / 2;
+    return scaled.copy(x, y, targetSize.width(), targetSize.height());
+}
+}
+
 BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
     : QWidget(parent), mainCart(cart), currentUserPtr(user)
 {
@@ -278,7 +295,7 @@ void BookDetailWidget::loadBook(const Book &book)
 
     QPixmap pix = BookCoverLoader::instance().cover(currentBook.getId());
     if (!pix.isNull()) {
-        coverLabel->setPixmap(pix.scaled(coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        coverLabel->setPixmap(fitCoverToFrame(pix, coverLabel->size()));
     } else {
         coverLabel->setPixmap(QPixmap());
         coverLabel->setText("📖");
