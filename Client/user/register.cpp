@@ -4,8 +4,8 @@
 #include <QMessageBox>
 #include "User.h"
 
-Register::Register(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent)
-    : QWidget(parent), userManager(userManager), publisherManager(publisherManager)
+Register::Register(UserManager *userManager, QWidget *parent)
+    : QWidget(parent), userManager(userManager)
 {
     // ۱. تنظیم نام آبجکت برای اعمال پس‌زمینه کرمی یکدست روی کل صفحه
     this->setObjectName("signUpPage");
@@ -225,19 +225,17 @@ void Register::onSignUpClicked() {
         return;
     }
 
-    // ۸. ساخت کاربر جدید و ثبتش در UserManager
-    User newUser(leusername->text().trimmed(), lepassword->text(), lesecurityanswer->text().trimmed());
-    newUser.setFirstLogin(true);
+    // ۸. ثبت‌نام کاربر جدید از طریق سرور
+    QString errorMessage;
+    bool success = userManager->registerUser(
+        leusername->text().trimmed(),
+        lepassword->text(),
+        lesecurityanswer->text().trimmed(),
+        errorMessage);
 
-    if (userManager->usernameExists(leusername->text().trimmed()) ||
-        publisherManager->usernameExists(leusername->text().trimmed())) {
-        QMessageBox::warning(this, "Validation Error", "This username is already taken. Please choose another one.");
-        return;
-    }
-
-    bool success = userManager->registerUser(newUser);
     if (!success) {
-        QMessageBox::warning(this, "Validation Error", "Something went wrong. Please try again.");
+        QMessageBox::warning(this, "Validation Error",
+                             errorMessage.isEmpty() ? "Something went wrong. Please try again." : errorMessage);
         return;
     }
 

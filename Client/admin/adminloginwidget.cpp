@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QStyleOption>
 #include <QPainter>
+#include "networkclient.h"
 
 AdminLoginWidget::AdminLoginWidget(QWidget *parent) : QWidget(parent)
 {
@@ -50,19 +51,25 @@ AdminLoginWidget::AdminLoginWidget(QWidget *parent) : QWidget(parent)
     connect(btnBack, &QPushButton::clicked, this, &AdminLoginWidget::backToLoginRequested);
 }
 
-void AdminLoginWidget::setAdminCredentials(const QString &username, const QString &password)
-{
-    adminUsername = username;
-    adminPassword = password;
-}
-
 void AdminLoginWidget::onLoginClicked()
 {
-    if (leUsername->text().trimmed() == adminUsername && lePassword->text() == adminPassword) {
-        emit adminSignInSuccess();
-    } else {
-        QMessageBox::warning(this, "Access Denied", "Incorrect admin credentials.");
+    QJsonObject data;
+    data["username"] = leUsername->text().trimmed();
+    data["password"] = lePassword->text();
+
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::Login, data);
+    if (response.value("status").toString() != "Success") {
+        QMessageBox::warning(this, "Access Denied", response.value("message").toString("Incorrect admin credentials."));
+        return;
     }
+
+    if (response.value("data").toObject().value("role").toString() != "Admin") {
+        QMessageBox::warning(this, "Access Denied", "This account does not have admin access.");
+        return;
+    }
+
+    lePassword->clear();
+    emit adminSignInSuccess();
 }
 
 void AdminLoginWidget::paintEvent(QPaintEvent *event)

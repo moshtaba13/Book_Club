@@ -4,14 +4,12 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include "Admin.h"
 
 class AdminLoginWidget : public QWidget
 {
     Q_OBJECT
 public:
     explicit AdminLoginWidget(QWidget *parent = nullptr);
-    void setAdminCredentials(const QString &username, const QString &password);
 
 signals:
     void adminSignInSuccess();
@@ -24,9 +22,6 @@ private slots:
     void onLoginClicked();
 
 private:
-    QString adminUsername;
-    QString adminPassword;
-
     QLineEdit *leUsername;
     QLineEdit *lePassword;
     QPushButton *btnLogin;

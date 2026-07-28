@@ -3,6 +3,9 @@
 #include <QPainter>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QMessageBox>
+#include "networkclient.h"
+#include "modelserializer.h"
 
 CartWidget::CartWidget(Cart *cart, QWidget *parent)
     : QWidget(parent), m_cart(cart)
@@ -204,11 +207,15 @@ void CartWidget::setupUI() {
         "}"
         );
     connect(btnCheckout, &QPushButton::clicked, this, [this]() {
-        QVector<Book> boughtBooks = m_cart->getItems();
-        if (m_cart->CheckOut()) {
-            updateUI();
-            emit checkoutSuccessful(boughtBooks);
+        QJsonObject response = NetworkClient::instance().sendRequest(RequestType::Checkout);
+        if (response.value("status").toString() != "Success") {
+            QMessageBox::warning(this, "Checkout Failed",
+                                 response.value("message").toString("Could not complete the purchase."));
+            return;
         }
+
+        refreshFromServer();
+        emit checkoutSuccessful();
     });
     summaryLayout->addWidget(btnCheckout);
 
@@ -288,8 +295,14 @@ QWidget* CartWidget::createCartItemRow(const Book &book) {
         );
 
     connect(btnRemove, &QPushButton::clicked, this, [this, bookId = book.getId()]() {
-        m_cart->RemoveItem(bookId);
-        updateUI();
+        QJsonObject data;
+        data["book_id"] = bookId;
+        QJsonObject response = NetworkClient::instance().sendRequest(RequestType::RemoveFromCart, data);
+        if (response.value("status").toString() != "Success") {
+            QMessageBox::warning(this, "Error", response.value("message").toString("Could not remove the book from the cart."));
+            return;
+        }
+        refreshFromServer();
     });
 
     rowLayout->addWidget(btnRemove);
@@ -336,6 +349,17 @@ void CartWidget::updateUI() {
                                 .arg(m_cart->getTotalDiscount(), 0, 'f', 2)
                                 .arg(m_cart->getTotaldiscountPercentage(), 0, 'f', 1));
     lblFinalPriceVal->setText(QString("$%1").arg(m_cart->getFinalPrice(), 0, 'f', 2));
+}
+
+void CartWidget::refreshFromServer()
+{
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::GetCart);
+    if (response.value("status").toString() == "Success")
+        m_cart->loadItems(ModelSerializer::cartFromJson(response.value("data").toObject()).getItems());
+    else
+        m_cart->clear();
+
+    updateUI();
 }
 
 void CartWidget::paintEvent(QPaintEvent *event) {

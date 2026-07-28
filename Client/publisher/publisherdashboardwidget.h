@@ -6,7 +6,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include "Publisher.h"
-#include "PublisherManager.h"
+#include "publishermanager.h"
 
 class PublisherDashboardWidget : public QWidget
 {
@@ -17,9 +17,7 @@ public:
 
 signals:
     void backToLoginRequested();
-    void publisherUpdated(const Publisher &updatedPublisher);
     void catalogChanged();
-    void bookPublished(const Book &newBook);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -27,7 +25,7 @@ protected:
 private slots:
     void onSaveInfoClicked();
     void onAddBookClicked();
-     void onChangePasswordClicked();
+    void onChangePasswordClicked();
     void onLogoutClicked();
 
 private:
@@ -37,6 +35,7 @@ private:
 
     PublisherManager *publisherManager;
     Publisher currentPublisher;
+    QVector<Book> publishedBooks;
 
     QPushButton *logoutButton;
 
