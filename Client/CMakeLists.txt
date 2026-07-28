@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(Client LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Network)
 
 qt_standard_project_setup()
 
@@ -19,7 +19,15 @@ qt_add_executable(Client
     general/main.cpp
 
     ${RESOURCES}
-    
+
+    network/networkclient.h
+    network/networkclient.cpp
+    network/modelserializer.h
+    network/modelserializer.cpp
+    network/bookcoverloader.h
+    network/bookcoverloader.cpp
+
+
     user/home.cpp
     user/home.h
     general/mainwindow.h
@@ -47,8 +55,8 @@ qt_add_executable(Client
     ../Common/models/Purchase.cpp
       ../Common/users/Member.h
     ../Common/users/Member.cpp
-    user/usermanager.h
-    user/usermanager.cpp
+    user/UserManager.h
+    user/UserManager.cpp
 
 
 
@@ -85,31 +93,29 @@ qt_add_executable(Client
     publisher/publisherdashboardwidget.cpp
     admin/adminpanelwidget.h
     admin/adminpanelwidget.cpp
+
     user/bookcardwidget.h
     user/bookcardwidget.cpp
     user/seeallbookswidget.h
     user/seeallbookswidget.cpp
-    network/networkclient.h
-    network/networkclient.cpp
-    network/modelserializer.h
-    network/modelserializer.cpp
-    network/network/bookcoverloader.h
-    network/bookcoverloader.cpp
-
 
 )
 target_link_libraries(Client
     PRIVATE
         Qt::Core
         Qt::Widgets
+        Qt::Network
 )
 target_include_directories(Client PRIVATE
+    ..
+    ../Common
     ../Common/models
     ../Common/users
     ${CMAKE_CURRENT_SOURCE_DIR}/general
     ${CMAKE_CURRENT_SOURCE_DIR}/user
     ${CMAKE_CURRENT_SOURCE_DIR}/admin
     ${CMAKE_CURRENT_SOURCE_DIR}/publisher
+    ${CMAKE_CURRENT_SOURCE_DIR}/network
 
 )
 
