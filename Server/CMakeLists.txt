@@ -48,6 +48,9 @@ add_executable(BookClubServer
     network/handlers/AdminHandler.cpp
     network/handlers/NotificationHandler.h
     network/handlers/NotificationHandler.cpp
+    ui/ServerWindow.h
+    ui/ServerWindow.cpp
+    ui/ServerWindow.ui
 )
 
 target_link_libraries(BookClubServer PRIVATE
