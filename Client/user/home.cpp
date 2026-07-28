@@ -2,6 +2,15 @@
 #include <QStyleOption>
 #include <QPainter>
 #include <QPixmap>
+#include "bookcoverloader.h"
+#include "bookcardwidget.h"
+#include "protocol.h"
+
+namespace {
+// Every home-page row shows at most this many books; "See all" is how the
+// rest of the list gets seen.
+constexpr int kHomeSectionLimit = 4;
+}
 
 home::home(QWidget *parent) : QWidget(parent) {
     this->setObjectName("homePage");
@@ -104,6 +113,10 @@ home::home(QWidget *parent) : QWidget(parent) {
     genresHeader->addWidget(btnGenresSeeAll);
     genresLayout->addLayout(genresHeader);
 
+    connect(btnGenresSeeAll, &QPushButton::clicked, this, [this]() {
+        emit seeAllGenresRequested(genresBooksAll);
+    });
+
     genresItemsLayout = new QHBoxLayout();
     genresItemsLayout->setSpacing(15);
     genresLayout->addLayout(genresItemsLayout);
@@ -127,6 +140,10 @@ home::home(QWidget *parent) : QWidget(parent) {
     featuredHeader->addStretch();
     featuredHeader->addWidget(btnFeaturedSeeAll);
     featuredLayout->addLayout(featuredHeader);
+
+    connect(btnFeaturedSeeAll, &QPushButton::clicked, this, [this]() {
+        emit seeAllRequested("Featured Books", featuredBooksAll);
+    });
 
     featuredItemsLayout = new QHBoxLayout();
     featuredItemsLayout->setSpacing(15);
@@ -152,6 +169,10 @@ home::home(QWidget *parent) : QWidget(parent) {
     recommendedHeader->addWidget(btnRecommendedSeeAll);
     recommendedLayout->addLayout(recommendedHeader);
 
+    connect(btnRecommendedSeeAll, &QPushButton::clicked, this, [this]() {
+        emit seeAllRequested("Recommended for u", recommendedBooksAll);
+    });
+
     recommendedItemsLayout = new QHBoxLayout();
     recommendedItemsLayout->setSpacing(15);
     recommendedLayout->addLayout(recommendedItemsLayout);
@@ -175,6 +196,10 @@ home::home(QWidget *parent) : QWidget(parent) {
     newReleasesHeader->addStretch();
     newReleasesHeader->addWidget(btnNewReleasesSeeAll);
     newReleasesLayout->addLayout(newReleasesHeader);
+
+    connect(btnNewReleasesSeeAll, &QPushButton::clicked, this, [this]() {
+        emit seeAllRequested("New Releases", newReleasesBooksAll);
+    });
 
     newReleasesItemsLayout = new QHBoxLayout();
     newReleasesItemsLayout->setSpacing(15);
@@ -200,6 +225,10 @@ home::home(QWidget *parent) : QWidget(parent) {
     bestSellersHeader->addWidget(btnBestSellersSeeAll);
     bestSellersLayout->addLayout(bestSellersHeader);
 
+    connect(btnBestSellersSeeAll, &QPushButton::clicked, this, [this]() {
+        emit seeAllRequested("Best Sellers", bestSellersBooksAll);
+    });
+
     bestSellersItemsLayout = new QHBoxLayout();
     bestSellersItemsLayout->setSpacing(15);
     bestSellersLayout->addLayout(bestSellersItemsLayout);
@@ -223,6 +252,10 @@ home::home(QWidget *parent) : QWidget(parent) {
     freeBooksHeader->addStretch();
     freeBooksHeader->addWidget(btnFreeBooksSeeAll);
     freeBooksLayout->addLayout(freeBooksHeader);
+
+    connect(btnFreeBooksSeeAll, &QPushButton::clicked, this, [this]() {
+        emit seeAllRequested("Free Books", freeBooksBooksAll);
+    });
 
     freeBooksItemsLayout = new QHBoxLayout();
     freeBooksItemsLayout->setSpacing(15);
@@ -282,28 +315,22 @@ home::home(QWidget *parent) : QWidget(parent) {
 
 QWidget *home::createBookWidget(const Book &book, QWidget *parent)
 {
-    QPushButton *card = new QPushButton(parent);
-    card->setCursor(Qt::PointingHandCursor);
-
-    card->setMinimumSize(110, 155);
-    card->setMaximumSize(140, 180);
-    card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-    card->setText(book.getTitle());
-    card->setStyleSheet(
-        "QPushButton {"
-        "   background-color: rgba(255, 255, 255, 110);"
-        "   border-radius: 12px;"
-        "   border: 1px solid rgba(0, 0, 0, 20);"
-        "   padding: 5px;"
-        "}"
-        "QPushButton:hover {"
-        "   background-color: rgba(255, 255, 255, 180);"
-        "}"
-        );
+    QPushButton *card = BookCardWidget::create(book, parent);
 
     connect(card, &QPushButton::clicked, this, [this, book]() {
         emit bookClicked(book);
+    });
+
+    return card;
+}
+
+QWidget *home::createGenreWidget(const Book &highlightBook, QWidget *parent)
+{
+    genre g = highlightBook.getGenre();
+    QPushButton *card = BookCardWidget::create(highlightBook, parent, genreDisplayName(g));
+
+    connect(card, &QPushButton::clicked, this, [this, g]() {
+        emit genreClicked(g);
     });
 
     return card;
@@ -320,51 +347,57 @@ static void clearLayout(QHBoxLayout *layout)
     }
 }
 
-void home::loadGenreBooks(const QVector<Book> &books)
+void home::loadGenreHighlights(const QVector<Book> &highlightPerGenre)
 {
+    genresBooksAll = highlightPerGenre;
     clearLayout(genresItemsLayout);
-    for (const Book &book : books) {
-        genresItemsLayout->addWidget(createBookWidget(book, genresFrame));
+    for (int i = 0; i < highlightPerGenre.size() && i < kHomeSectionLimit; ++i) {
+        genresItemsLayout->addWidget(createGenreWidget(highlightPerGenre.at(i), genresFrame));
     }
 }
 
 void home::loadFeaturedBooks(const QVector<Book> &books)
 {
+    featuredBooksAll = books;
     clearLayout(featuredItemsLayout);
-    for (const Book &book : books) {
-        featuredItemsLayout->addWidget(createBookWidget(book, featuredFrame));
+    for (int i = 0; i < books.size() && i < kHomeSectionLimit; ++i) {
+        featuredItemsLayout->addWidget(createBookWidget(books.at(i), featuredFrame));
     }
 }
 
 void home::loadRecommendedBooks(const QVector<Book> &books)
 {
+    recommendedBooksAll = books;
     clearLayout(recommendedItemsLayout);
-    for (const Book &book : books) {
-        recommendedItemsLayout->addWidget(createBookWidget(book, recommendedFrame));
+    for (int i = 0; i < books.size() && i < kHomeSectionLimit; ++i) {
+        recommendedItemsLayout->addWidget(createBookWidget(books.at(i), recommendedFrame));
     }
 }
 
 void home::loadNewReleases(const QVector<Book> &books)
 {
+    newReleasesBooksAll = books;
     clearLayout(newReleasesItemsLayout);
-    for (const Book &book : books) {
-        newReleasesItemsLayout->addWidget(createBookWidget(book, newReleasesFrame));
+    for (int i = 0; i < books.size() && i < kHomeSectionLimit; ++i) {
+        newReleasesItemsLayout->addWidget(createBookWidget(books.at(i), newReleasesFrame));
     }
 }
 
 void home::loadBestSellers(const QVector<Book> &books)
 {
+    bestSellersBooksAll = books;
     clearLayout(bestSellersItemsLayout);
-    for (const Book &book : books) {
-        bestSellersItemsLayout->addWidget(createBookWidget(book, bestSellersFrame));
+    for (int i = 0; i < books.size() && i < kHomeSectionLimit; ++i) {
+        bestSellersItemsLayout->addWidget(createBookWidget(books.at(i), bestSellersFrame));
     }
 }
 
 void home::loadFreeBooks(const QVector<Book> &books)
 {
+    freeBooksBooksAll = books;
     clearLayout(freeBooksItemsLayout);
-    for (const Book &book : books) {
-        freeBooksItemsLayout->addWidget(createBookWidget(book, freeBooksFrame));
+    for (int i = 0; i < books.size() && i < kHomeSectionLimit; ++i) {
+        freeBooksItemsLayout->addWidget(createBookWidget(books.at(i), freeBooksFrame));
     }
 }
 
