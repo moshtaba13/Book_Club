@@ -9,5 +9,5 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network Sql)
 
 add_subdirectory(Common)
-# add_subdirectory(Server)
+add_subdirectory(Server)
 add_subdirectory(Client)
