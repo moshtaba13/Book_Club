@@ -30,7 +30,7 @@ GenreSelectionWidget::GenreSelectionWidget(QWidget *parent) : QWidget(parent)
     lblTitle->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(lblTitle);
 
-    lblSubtitle = new QLabel("Choose 3 genres you love, so we can recommend books for you", this);
+    lblSubtitle = new QLabel("Choose 1 to 3 genres you love, so we can recommend books for you", this);
     lblSubtitle->setFont(QFont("Segoe UI", 12, QFont::DemiBold));
     lblSubtitle->setStyleSheet("color: #FF69B4; background: transparent;");
     lblSubtitle->setAlignment(Qt::AlignCenter);
@@ -161,8 +161,8 @@ void GenreSelectionWidget::onContinueClicked()
         }
     }
 
-    if (selected.size() != 3) {
-        lblWarning->setText("Please select exactly 3 genres.");
+    if (selected.isEmpty() || selected.size() > 3) {
+        lblWarning->setText("Please select 1 to 3 genres.");
         return;
     }
 
