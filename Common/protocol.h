@@ -73,7 +73,7 @@ enum class RequestType {
     // پروفایل کاربر
     // ─────────────────────────────────────────
     GetProfile,             // دریافت اطلاعات حساب کاربری
-    ChangeUsername,          // تغییر نام کاربری     
+    ChangeUsername,          // تغییر نام کاربری
     ChangePassword,         // تغییر رمز عبور
     UpdateFavoriteGenres,   // آپدیت ژانرهای مورد علاقه
 
@@ -118,7 +118,7 @@ enum class RequestType {
     GetNewestBooks,         // جدیدترین کتاب‌ها
     GetMostRatedBooks,      // محبوب‌ترین کتاب‌ها (بیشترین امتیاز)
     GetFreeBooks,           // کتاب‌های رایگان
-    
+
     GetBookFile,  // دریافت فایل PDF کتاب
     GetBookCover, // دریافت تصویر کاور
 };
@@ -228,7 +228,7 @@ inline QString requestTypeToString(RequestType type)
     case RequestType::GetNewestBooks:           return "GetNewestBooks";
     case RequestType::GetMostRatedBooks:        return "GetMostRatedBooks";
     case RequestType::GetFreeBooks:             return "GetFreeBooks";
-    
+
     case RequestType::GetBookCover:             return "GetBookCover";
     case RequestType::GetBookFile:              return "GetBookFile";
 
@@ -318,7 +318,7 @@ inline RequestType stringToRequestType(const QString &str)
     if (str == "DeleteBookAdmin")           return RequestType::DeleteBookAdmin;
     if (str == "EditBookAdmin")             return RequestType::EditBookAdmin;
     if (str == "DeleteReviewAdmin")         return RequestType::DeleteReviewAdmin;
-    
+
     // ناشر - آمار
     if (str == "GetPublisherStats")         return RequestType::GetPublisherStats;
     if (str == "GetTopSellingBooks")        return RequestType::GetTopSellingBooks;
@@ -422,4 +422,31 @@ inline genre stringToGenre(const QString &str)
     if (str == "Science_fiction") return genre::Science_fiction;
     if (str == "Scary")           return genre::Scary;
     return genre::Fiction;
+}
+
+// Every genre the app supports, in a stable order - used to build one
+// "most popular in this genre" highlight per genre on the Home page.
+inline QVector<genre> allGenres()
+{
+    return {
+        genre::Fiction,
+        genre::Non_fiction,
+        genre::Academic,
+        genre::Drama,
+        genre::Mystery,
+        genre::Crime,
+        genre::Romance,
+        genre::History,
+        genre::Science_fiction,
+        genre::Scary
+    };
+}
+
+// A friendlier label for the genre than genreToString() (which is the
+// protocol's wire format, e.g. "Non_fiction") - meant for UI display.
+inline QString genreDisplayName(genre g)
+{
+    QString name = genreToString(g);
+    name.replace('_', ' ');
+    return name;
 }
