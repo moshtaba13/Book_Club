@@ -1,6 +1,7 @@
 #include "Server.h"
 #include "ClientHandler.h"
 #include "../Database.h"
+#include <QProcessEnvironment>
 
 Server& Server::instance() {
     static Server instance;
@@ -15,10 +16,15 @@ bool Server::startServer(int port)
         emit logMessage("Database connection failed!");
         return false;
     }
+.
+    bool portOverridden = false;
+    int envPort = qEnvironmentVariableIntValue("BOOKCLUB_SERVER_PORT", &portOverridden);
+    if (portOverridden && envPort > 0)
+        port = envPort;
 
     if (!listen(QHostAddress::Any, port)) {
         emit logMessage("Server failed to start on port "
-                       + QString::number(port));
+                       + QString::number(port) + ": " + errorString());
         return false;
     }
 

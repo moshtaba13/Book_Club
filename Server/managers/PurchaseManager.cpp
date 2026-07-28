@@ -30,6 +30,8 @@ bool PurchaseManager::checkout(int userId)
         if (!PurchaseRepository::instance().save(userId, purchase))
             return false;
 
+        BookRepository::instance().updateSalesCount(book.getId(), book.getSalesCount() + 1);
+
         SavedBookRepository::instance().remove(userId, book.getId());
         
         auto publisher = MemberRepository::instance().findByUsername(book.getPublisherUsername());
@@ -39,9 +41,9 @@ bool PurchaseManager::checkout(int userId)
                 double newRevenue = pub->getTotalRevenue() + book.getFinalPrice();
                 MemberRepository::instance().updateTotalRevenue(pub->getId(), newRevenue);
             }
-        }
 
-        NotificationManager::instance().notifNewSale(publisher->getId(), book);
+            NotificationManager::instance().notifNewSale(publisher->getId(), book);
+        }
     }
 
     CartRepository::instance().clear(userId);

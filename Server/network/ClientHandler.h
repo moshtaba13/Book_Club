@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "../../Common/users/Member.h"
-#include "../../Common/Protocol.h"
+#include "../../Common/protocol.h"
 
 using namespace std;
 

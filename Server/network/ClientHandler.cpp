@@ -114,6 +114,8 @@ void ClientHandler::processRequest(const QJsonObject &request)
     case RequestType::GetMostRatedBooks:
     case RequestType::GetFreeBooks:
     case RequestType::GetRecommendedBooks:
+    case RequestType::GetBookFile:
+    case RequestType::GetBookCover:
         response = BookHandler::handle(type, data, this);
         break;
 
@@ -154,6 +156,7 @@ void ClientHandler::processRequest(const QJsonObject &request)
     case RequestType::GetAllPublishers:
     case RequestType::SearchUsers:
     case RequestType::GetBlockedUsers:
+    case RequestType::GetUnblockedUser:
     case RequestType::BlockUser:
     case RequestType::UnblockUser:
     case RequestType::DeleteUser:

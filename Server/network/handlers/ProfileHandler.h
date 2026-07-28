@@ -2,7 +2,7 @@
 #define PROFILEHANDLER_H
 
 #include "BaseHandler.h"
-#include "../../../Common/Protocol.h"
+#include "../../../Common/protocol.h"
 
 class ProfileHandler : public BaseHandler
 {

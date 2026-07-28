@@ -4,6 +4,11 @@
 #include <QDateTime>
 
 #include "../managers/AuthManager.h"
+#include "BookRepository.h"
+#include "PurchaseRepository.h"
+#include "SavedBookRepository.h"
+#include "ShelfRepository.h"
+#include "NotificationRepository.h"
 
 shared_ptr<Member> MemberRepository::mapToMember(QSqlQuery &query)
 {
@@ -37,6 +42,15 @@ shared_ptr<Member> MemberRepository::mapToMember(QSqlQuery &query)
         if (countQuery.next())
             user->setPurchaseCount(countQuery.value(0).toInt());
 
+        for (const Purchase &p : PurchaseRepository::instance().findByUser(id))
+            user->addPurchasedBook(p);
+
+        for (const Book &b : SavedBookRepository::instance().findByUser(id))
+            user->addSavedBook(b);
+
+        for (const Shelf &s : ShelfRepository::instance().findByUser(id))
+            user->addShelf(s);
+
         member = user;
 
     } 
@@ -44,6 +58,10 @@ shared_ptr<Member> MemberRepository::mapToMember(QSqlQuery &query)
         auto publisher = make_shared<Publisher>(username, password, secAnswer);
         publisher->setId(id);
         publisher->setTotalRevenue(query.value("total_revenue").toDouble());
+
+        for (const Book &b : BookRepository::instance().findByPublisher(id))
+            publisher->addPublishedBook(b);
+
         member = publisher;
 
     } 
@@ -56,6 +74,8 @@ shared_ptr<Member> MemberRepository::mapToMember(QSqlQuery &query)
     if (member) {
         member->setBlocked(query.value("is_blocked").toInt() == 1);
         member->setRegisterDate(QDateTime::fromString(query.value("register_date").toString(),Qt::ISODate));
+        for (const Notification &n : NotificationRepository::instance().findByUser(id))
+            member->addNotification(n);
     }
 
     return member;
@@ -247,9 +267,9 @@ bool MemberRepository::updateUsername(int userId, const QString &newUsername) {
 bool MemberRepository::updatePassword(int userId, const QString &newPassword, const QString &newsalt)
 {
     QSqlQuery query = Database::instance().createQuery();
-    query.prepare("UPDATE members SET"
-                  "password = :password,"
-                  "salt = :salt"
+    query.prepare("UPDATE members SET "
+                  "password = :password, "
+                  "salt = :salt "
                   "WHERE id = :id"
                 );
     query.bindValue(":password", newPassword);
@@ -257,7 +277,7 @@ bool MemberRepository::updatePassword(int userId, const QString &newPassword, co
     query.bindValue(":id", userId);
 
     if (!query.exec()) {
-        qWarning() << "UserRepository::updatePassword error:" << query.lastError().text();
+        qWarning() << "MemberRepository::updatePassword error:" << query.lastError().text();
         return false;
     }
     return true;
@@ -271,7 +291,7 @@ bool MemberRepository::updateBlockStatus(int userId, bool blocked) {
     query.bindValue(":id",      userId);
 
     if (!query.exec()) {
-        qWarning() << "UserRepository::updateBlockStatus error:" << query.lastError().text();
+        qWarning() << "MemberRepository::updateBlockStatus error:" << query.lastError().text();
         return false;
     }
     return true;
@@ -288,7 +308,7 @@ bool MemberRepository::updateFavoriteGenres(int userId, const QVector<genre> &ge
     query.bindValue(":id", userId);
 
     if (!query.exec()) {
-        qWarning() << "UserRepository::updateFavoriteGenres error:"<< query.lastError().text();
+        qWarning() << "MemberRepository::updateFavoriteGenres error:"<< query.lastError().text();
         return false;
     }
     return true;
@@ -301,7 +321,7 @@ bool MemberRepository::updateFirstLogin(int userId, bool isFirst) {
     query.bindValue(":id", userId);
 
     if (!query.exec()) {
-        qWarning() << "UserRepository::updateFirstLogin error:" << query.lastError().text();
+        qWarning() << "MemberRepository::updateFirstLogin error:" << query.lastError().text();
         return false;
     }
     return true;
@@ -315,7 +335,7 @@ bool MemberRepository::updateTotalRevenue(int publisherId, double revenue)
     query.bindValue(":id",      publisherId);
 
     if (!query.exec()) {
-        qWarning() << "UserRepository::updateTotalRevenue error:"<< query.lastError().text();
+        qWarning() << "MemberRepository::updateTotalRevenue error:"<< query.lastError().text();
         return false;
     }
     return true;
@@ -328,7 +348,7 @@ bool MemberRepository::remove(int id)
     query.bindValue(":id", id);
 
     if (!query.exec()) {
-        qWarning() << "UserRepository::remove error:" << query.lastError().text();
+        qWarning() << "MemberRepository::remove error:" << query.lastError().text();
         return false;
     }
     return true;

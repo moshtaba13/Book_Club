@@ -19,7 +19,8 @@ Book BookRepository::mapToBook(QSqlQuery &query)
     book.setSalesCount(query.value("sales_count").toInt());
     book.setAverageRating(query.value("average_rating").toDouble());
     book.setPublishDate(QDateTime::fromString(query.value("publish_date").toString(), Qt::ISODate));
-    book.setPublisherUsername(query.value("publisher_username").toString());
+    book.setPublisherUsername(AuthManager::instance().
+        decrypt(query.value("publisher_username").toString()));
 
     QVector<Review> reviews = findReviews(book.getId());
     for (const Review &r : reviews)
@@ -54,11 +55,11 @@ bool BookRepository::save(int publisherId, Book &book) {
     QSqlQuery query = Database::instance().createQuery();
     query.prepare(
         "INSERT INTO books "
-        "(title, author, publisher_id, publisher_username , genre, description, "
+        "(title, author, publisher_id, genre, description, "
         "price, discount_percent, cover_image_path, pdf_file_path, "
         "is_active, sales_count, average_rating, publish_date) "
         "VALUES "
-        "(:title, :author, :publisher_id, :publisher_username, :genre, :description, "
+        "(:title, :author, :publisher_id, :genre, :description, "
         ":price, :discount, :cover, :pdf, "
         ":is_active, :sales_count, :avg_rating, :publish_date)"
     );

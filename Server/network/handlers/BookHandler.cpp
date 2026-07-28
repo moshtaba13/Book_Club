@@ -42,7 +42,7 @@ QJsonObject BookHandler::handleGetBooksByPublisher(const QJsonObject &data, Clie
 
     QJsonArray arr;
     for (const Book &b : books)
-        arr.append(bookToJson(b));
+        arr.append(bookToJsonFull(b));
 
     QJsonObject result;
     result["books"] = arr;
@@ -112,6 +112,10 @@ QJsonObject BookHandler::handleAddBook(const QJsonObject &data, ClientHandler *c
 
     book.setImagePath(coverPath);
     BookRepository::instance().update(book);
+
+    Publisher *pub = dynamic_cast<Publisher*>(client->currentUser().get());
+    if (pub)
+        pub->addPublishedBook(book);
 
     return success(bookToJsonFull(book));
 }
@@ -268,7 +272,7 @@ QJsonObject BookHandler::handleGetTopSellingBooks()
     QVector<Book> books = BookManager::instance().getTopSellingBooks();
     QJsonArray arr;
     for (const Book &b : books)
-        arr.append(bookToJson(b));
+        arr.append(bookToJsonFull(b));
 
     QJsonObject result;
     result["books"] = arr;
@@ -280,7 +284,7 @@ QJsonObject BookHandler::handleGetLeastSellingBooks()
     QVector<Book> books = BookManager::instance().getLeastSellingBooks();
     QJsonArray arr;
     for (const Book &b : books)
-        arr.append(bookToJson(b));
+        arr.append(bookToJsonFull(b));
 
     QJsonObject result;
     result["books"] = arr;

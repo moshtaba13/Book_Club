@@ -2,7 +2,7 @@
 #define AUTHHANDLER_H
 
 #include "BaseHandler.h"
-#include "../../../Common/Protocol.h"
+#include "../../../Common/protocol.h"
 
 class AuthHandler : public BaseHandler
 {

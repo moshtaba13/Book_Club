@@ -5,7 +5,7 @@ Notification NotificationRepository::mapToNotification(QSqlQuery &query) {
     notification.setId(query.value("id").toInt());
     notification.setCreatedAt(QDateTime::fromString(query.value("created_at").toString(), Qt::ISODate));
 
-    if (query.value("is_read").toInt() == 1)
+    if (query.value("seen").toInt() == 1)
         notification.markAsRead();
 
     return notification;
@@ -21,12 +21,12 @@ bool NotificationRepository::save(int userId, const Notification &notification)
     QSqlQuery query = Database::instance().createQuery();
     query.prepare(
         "INSERT INTO notifications "
-        "(user_id, message, is_read, created_at) "
-        "VALUES (:uid, :message, :is_read, :created_at)"
+        "(user_id, message, seen, created_at) "
+        "VALUES (:uid, :message, :seen, :created_at)"
     );
-    query.bindValue(":uid",        userId);
-    query.bindValue(":message",    notification.getMessage());
-    query.bindValue(":is_read",    notification.isRead() ? 1 : 0);
+    query.bindValue(":uid",  userId);
+    query.bindValue(":message", notification.getMessage());
+    query.bindValue(":seen", notification.isRead() ? 1 : 0);
     query.bindValue(":created_at", notification.getCreatedAt().toString(Qt::ISODate));
 
     if (!query.exec()) {
@@ -42,7 +42,7 @@ bool NotificationRepository::save(int userId, const Notification &notification)
 bool NotificationRepository::markAsRead(int notificationId)
 {
     QSqlQuery query = Database::instance().createQuery();
-    query.prepare("UPDATE notifications SET is_read = 1 WHERE id = :id");
+    query.prepare("UPDATE notifications SET seen = 1 WHERE id = :id");
     query.bindValue(":id", notificationId);
 
     if (!query.exec()) {
@@ -54,7 +54,7 @@ bool NotificationRepository::markAsRead(int notificationId)
 
 bool NotificationRepository::markAllAsRead(int userId) {
     QSqlQuery query = Database::instance().createQuery();
-    query.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = :uid");
+    query.prepare("UPDATE notifications SET seen = 1 WHERE user_id = :uid");
     query.bindValue(":uid", userId);
 
     if (!query.exec()) {
@@ -87,7 +87,7 @@ int NotificationRepository::unreadCount(int userId) {
     QSqlQuery query = Database::instance().createQuery();
     query.prepare(
         "SELECT COUNT(*) FROM notifications "
-        "WHERE user_id = :uid AND is_read = 0"
+        "WHERE user_id = :uid AND seen = 0"
     );
     query.bindValue(":uid", userId);
     query.exec();
