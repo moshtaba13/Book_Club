@@ -10,10 +10,7 @@
 #include "bookcoverloader.h"
 
 namespace {
-// Scales the cover so it completely fills targetSize (no empty bars),
-// cropping whatever overhangs on the long side - equivalent to CSS's
-// "object-fit: cover". Keeps the cover perfectly sized to coverLabel's
-// frame regardless of the image's own aspect ratio.
+
 QPixmap fitCoverToFrame(const QPixmap &source, const QSize &targetSize)
 {
     if (source.isNull() || targetSize.isEmpty())
@@ -36,7 +33,7 @@ BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
     outerLayout->setContentsMargins(0, 0, 0, 0);
     outerLayout->setSpacing(0);
 
-    // هدر (آبی آسمونی، دقیقاً مثل headerWidget توی home.cpp)
+
     QWidget *headerWidget = new QWidget(this);
     headerWidget->setMinimumHeight(75);
     headerWidget->setMaximumHeight(75);
@@ -64,7 +61,7 @@ BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
     headerLayout->addStretch();
     outerLayout->addWidget(headerWidget);
 
-    // بدنه اسکرول‌شونده
+
     QScrollArea *scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
@@ -79,14 +76,14 @@ BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
     mainLayout->setContentsMargins(30, 30, 30, 30);
     mainLayout->setSpacing(20);
 
-    // کارت اطلاعات کتاب (کرم، مثل genresFrame)
+
     QFrame *infoCard = new QFrame(scrollWidget);
     infoCard->setStyleSheet("background-color: rgba(253, 246, 238, 180); border-radius: 20px;");
     QHBoxLayout *infoLayout = new QHBoxLayout(infoCard);
     infoLayout->setContentsMargins(25, 25, 25, 25);
     infoLayout->setSpacing(20);
 
-    // کاور کتاب
+
     coverLabel = new QLabel(infoCard);
     coverLabel->setFixedSize(140, 190);
     coverLabel->setStyleSheet(
@@ -97,7 +94,7 @@ BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
     coverLabel->setAlignment(Qt::AlignCenter);
     infoLayout->addWidget(coverLabel);
 
-    // متن‌های سمت راست کاور
+
     QVBoxLayout *textColumn = new QVBoxLayout();
     textColumn->setSpacing(8);
 
@@ -173,7 +170,7 @@ BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
     infoLayout->addLayout(textColumn, 1);
     mainLayout->addWidget(infoCard);
 
-    // کارت نظرات (آبی آسمونی، مثل featuredFrame)
+
     QFrame *reviewsCard = new QFrame(scrollWidget);
     reviewsCard->setStyleSheet("background-color: rgba(210, 235, 255, 170); border-radius: 20px;");
     QVBoxLayout *reviewsCardLayout = new QVBoxLayout(reviewsCard);
@@ -280,8 +277,7 @@ void BookDetailWidget::loadBook(const Book &book)
     currentBook = book;
     resetReviewForm();
 
-    // GetAllBooks/search results are lightweight (no reviews); fetch the
-    // full record so reviews and the average rating are up to date.
+
     QJsonObject response = NetworkClient::instance().sendRequest(
         RequestType::GetBookDetails, QJsonObject{{"book_id", book.getId()}});
     if (response.value("status").toString() == "Success")

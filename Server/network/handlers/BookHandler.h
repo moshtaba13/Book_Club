@@ -31,9 +31,7 @@ private:
     static QJsonObject handleGetBookCover(const QJsonObject &data, ClientHandler *client);
 
     public:
-    static QJsonObject handle(RequestType type,
-                              const QJsonObject &data,
-                              ClientHandler *client);
+    static QJsonObject handle(RequestType type,const QJsonObject &data, ClientHandler *client);
 };
 
 #endif

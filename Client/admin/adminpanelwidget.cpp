@@ -49,7 +49,7 @@ AdminPanelWidget::AdminPanelWidget(UserManager *userManager, PublisherManager *p
 
     outerLayout->addWidget(headerWidget);
 
-    // تب‌ها
+
     QTabWidget *tabs = new QTabWidget(this);
     tabs->setStyleSheet(
         "QTabWidget::pane { border: none; }"
@@ -57,7 +57,7 @@ AdminPanelWidget::AdminPanelWidget(UserManager *userManager, PublisherManager *p
         "QTabBar::tab:selected { background-color: rgba(210, 235, 255, 170); font-weight: bold; }"
         );
 
-    // ===== تب کاربران عادی =====
+
     QScrollArea *usersScroll = new QScrollArea();
     usersScroll->setWidgetResizable(true);
     usersScroll->setFrameShape(QFrame::NoFrame);
@@ -74,7 +74,7 @@ AdminPanelWidget::AdminPanelWidget(UserManager *userManager, PublisherManager *p
     usersScroll->setWidget(usersScrollWidget);
     tabs->addTab(usersScroll, "Users");
 
-    // ===== تب ناشران =====
+
     QScrollArea *publishersScroll = new QScrollArea();
     publishersScroll->setWidgetResizable(true);
     publishersScroll->setFrameShape(QFrame::NoFrame);
@@ -91,7 +91,7 @@ AdminPanelWidget::AdminPanelWidget(UserManager *userManager, PublisherManager *p
     publishersScroll->setWidget(publishersScrollWidget);
     tabs->addTab(publishersScroll, "Publishers");
 
-    // ===== تب کتاب‌ها و محتوا =====
+
     QScrollArea *booksScroll = new QScrollArea();
     booksScroll->setWidgetResizable(true);
     booksScroll->setFrameShape(QFrame::NoFrame);
@@ -380,7 +380,7 @@ void AdminPanelWidget::refreshBooksList()
 
         bookBoxLayout->addLayout(bookHeader);
 
-        // نمایش نظرات و امکان حذف هر نظر توسط ادمین
+
         if (!book.getReviews().isEmpty()) {
             QLabel *lblReviewsTitle = new QLabel("Reviews:", bookBox);
             lblReviewsTitle->setStyleSheet("color: #706357; font-size: 11px; background: transparent;");

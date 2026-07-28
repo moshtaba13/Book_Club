@@ -30,8 +30,7 @@ QPixmap BookCoverLoader::cover(int bookId)
         pix.loadFromData(bytes);
     }
 
-    // Cache the result even on failure (as a null pixmap) so we don't hammer
-    // the server with repeated requests for a book that has no cover.
+
     cache.insert(bookId, pix);
     return pix;
 }

@@ -20,8 +20,6 @@ public:
 
 signals:
     void backToHomeRequested();
-    // Emitted when the user clicks "Read Book"; the owner (MainWindow) is
-    // expected to open this book in the in-app PdfReaderWidget.
     void readRequested(int bookId, const QString &title);
 
 protected:

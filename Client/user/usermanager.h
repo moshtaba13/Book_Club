@@ -5,8 +5,7 @@
 #include <QString>
 #include "User.h"
 
-// Thin wrapper around NetworkClient for user-account operations. Holds no
-// local state itself anymore - the server is the single source of truth.
+
 class UserManager
 {
 public:

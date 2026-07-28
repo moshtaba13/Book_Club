@@ -55,7 +55,7 @@ PersonalLibraryWidget::PersonalLibraryWidget(QWidget *parent)
 
     outerLayout->addWidget(headerWidget);
 
-    // بدنه اسکرول‌شونده
+
     QScrollArea *scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
@@ -70,7 +70,7 @@ PersonalLibraryWidget::PersonalLibraryWidget(QWidget *parent)
     mainLayout->setContentsMargins(30, 30, 30, 30);
     mainLayout->setSpacing(20);
 
-    // ===== کارت ۱: کتاب‌های من (هلویی) =====
+
     QFrame *myBooksCard = new QFrame(scrollWidget);
     myBooksCard->setStyleSheet("background-color: rgba(255, 192, 159, 195); border-radius: 20px;");
     QVBoxLayout *myBooksCardLayout = new QVBoxLayout(myBooksCard);
@@ -88,7 +88,7 @@ PersonalLibraryWidget::PersonalLibraryWidget(QWidget *parent)
 
     mainLayout->addWidget(myBooksCard);
 
-    // ===== کارت ۲: کتاب‌های ذخیره‌شده (هلویی) =====
+
     QFrame *savedBooksCard = new QFrame(scrollWidget);
     savedBooksCard->setStyleSheet("background-color: rgba(255, 192, 159, 195); border-radius: 20px;");
     QVBoxLayout *savedBooksCardLayout = new QVBoxLayout(savedBooksCard);
@@ -106,7 +106,6 @@ PersonalLibraryWidget::PersonalLibraryWidget(QWidget *parent)
 
     mainLayout->addWidget(savedBooksCard);
 
-    // ===== کارت ۳: قفسه‌ها (هلویی) =====
     QFrame *shelvesCard = new QFrame(scrollWidget);
     shelvesCard->setStyleSheet("background-color: rgba(255, 192, 159, 195); border-radius: 20px;");
     QVBoxLayout *shelvesCardLayout = new QVBoxLayout(shelvesCard);

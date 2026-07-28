@@ -26,7 +26,7 @@ ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
     outerLayout->setContentsMargins(0, 0, 0, 0);
     outerLayout->setSpacing(0);
 
-    // هدر
+
     QWidget *headerWidget = new QWidget(this);
     headerWidget->setMinimumHeight(75);
     headerWidget->setMaximumHeight(75);
@@ -78,7 +78,7 @@ ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
     mainLayout->setContentsMargins(30, 30, 30, 30);
     mainLayout->setSpacing(20);
 
-    // ===== کارت ۱: اطلاعات حساب =====
+
     QFrame *infoCard = new QFrame(scrollWidget);
     infoCard->setStyleSheet("background-color: rgba(253, 246, 238, 180); border-radius: 20px;");
     QVBoxLayout *infoLayout = new QVBoxLayout(infoCard);
@@ -113,7 +113,6 @@ ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
 
     mainLayout->addWidget(infoCard);
 
-    // ===== کارت ۲: تغییر رمز عبور =====
     QFrame *passCard = new QFrame(scrollWidget);
     passCard->setStyleSheet("background-color: #EAF5FF; border-radius: 20px;");
     QVBoxLayout *passLayout = new QVBoxLayout(passCard);
@@ -159,7 +158,7 @@ ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
 
     mainLayout->addWidget(passCard);
 
-    // ===== کارت ۳: ژانرهای مورد علاقه =====
+
     QFrame *genreCard = new QFrame(scrollWidget);
     genreCard->setStyleSheet("background-color: rgba(253, 246, 238, 180); border-radius: 20px;");
     QVBoxLayout *genreCardLayout = new QVBoxLayout(genreCard);
@@ -205,7 +204,7 @@ ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
 
     mainLayout->addWidget(genreCard);
 
-    // ===== کارت ۴: تاریخچه خرید =====
+
     QFrame *historyCard = new QFrame(scrollWidget);
     historyCard->setStyleSheet("background-color: rgba(253, 246, 238, 180); border-radius: 20px;");
     QVBoxLayout *historyLayout = new QVBoxLayout(historyCard);

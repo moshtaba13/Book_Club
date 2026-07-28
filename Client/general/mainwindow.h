@@ -54,12 +54,12 @@ private:
     AdminPanelWidget *AdminPanelPage;
     SeeAllBooksWidget *SeeAllPage;
     PdfReaderWidget *ReaderPage;
-    // Whichever page (BookDetailPage or LibraryPage) opened the reader, so
-    // its "Back" button can return there instead of always going Home.
+    /* Whichever page (BookDetailPage or LibraryPage) opened the reader, so
+    its "Back" button can return there instead of always going Home.*/
     QWidget *readerReturnPage;
-    // Whichever page (HomePage or PublisherDashboardPage) opened
-    // notifications, so its "Back" button returns there instead of always
-    // going Home.
+    /* Whichever page (HomePage or PublisherDashboardPage) opened
+     notifications, so its Back button returns there instead of always
+     going Home.*/
     QWidget *notificationsReturnPage;
 };
 #endif // MAINWINDOW_H

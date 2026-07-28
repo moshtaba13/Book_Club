@@ -18,7 +18,7 @@ NotificationWidget::NotificationWidget(QWidget *parent)
     outerLayout->setContentsMargins(0, 0, 0, 0);
     outerLayout->setSpacing(0);
 
-    // هدر
+
     QWidget *headerWidget = new QWidget(this);
     headerWidget->setMinimumHeight(75);
     headerWidget->setMaximumHeight(75);
@@ -58,7 +58,7 @@ NotificationWidget::NotificationWidget(QWidget *parent)
 
     outerLayout->addWidget(headerWidget);
 
-    // بدنه اسکرول‌شونده
+
     QScrollArea *scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
@@ -140,7 +140,7 @@ void NotificationWidget::refreshNotifications()
         int notifId = n.getId();
         row->installEventFilter(this);
 
-        // کلیک روی کل کارت، پیام رو خوانده‌شده می‌کنه
+
         QPushButton *invisibleClickCatcher = new QPushButton(row);
         invisibleClickCatcher->setStyleSheet("background: transparent; border: none;");
         invisibleClickCatcher->setGeometry(row->rect());

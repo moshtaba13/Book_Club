@@ -81,9 +81,7 @@ void ForgotPasswordWidget::onFindUserClicked()
         return;
     }
 
-    // The security answer can only be verified server-side (it's stored
-    // encrypted, never sent to the client), so both the answer and the new
-    // password are collected here and checked together by ResetPassword.
+
     currentUsername = username;
 
     lblQuestion->setText("Security question: What is your favorite book or author?");

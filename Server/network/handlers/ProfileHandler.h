@@ -13,9 +13,7 @@ private:
     static QJsonObject handleUpdateFavoriteGenres(const QJsonObject &data, ClientHandler *client);
 
 public:
-    static QJsonObject handle(RequestType type,
-                              const QJsonObject &data,
-                              ClientHandler *client);
+    static QJsonObject handle(RequestType type, const QJsonObject &data,ClientHandler *client);
 
 };
 
