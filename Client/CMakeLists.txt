@@ -85,6 +85,12 @@ qt_add_executable(Client
     publisher/publisherdashboardwidget.cpp
     admin/adminpanelwidget.h
     admin/adminpanelwidget.cpp
+    network/networkclient.h
+    network/networkclient.cpp
+    network/modelserializer.h
+    network/modelserializer.cpp
+    network/network/bookcoverloader.h
+    network/bookcoverloader.cpp
 
 
 )
