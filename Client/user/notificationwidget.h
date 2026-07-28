@@ -4,18 +4,17 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
-#include "User.h"
+#include "Notification.h"
 
 class NotificationWidget : public QWidget
 {
     Q_OBJECT
 public:
     explicit NotificationWidget(QWidget *parent = nullptr);
-    void loadUser(User &user);
+    void refreshFromServer();
 
 signals:
     void backToHomeRequested();
-    void userUpdated(const User &updatedUser);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -27,7 +26,7 @@ private slots:
 private:
     void refreshNotifications();
 
-    User *currentUser;
+    QVector<Notification> notifications;
 
     QPushButton *backButton;
     QPushButton *btnMarkAllRead;
