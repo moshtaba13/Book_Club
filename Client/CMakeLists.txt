@@ -89,6 +89,12 @@ qt_add_executable(Client
     user/bookcardwidget.cpp
     user/seeallbookswidget.h
     user/seeallbookswidget.cpp
+    network/networkclient.h
+    network/networkclient.cpp
+    network/modelserializer.h
+    network/modelserializer.cpp
+    network/network/bookcoverloader.h
+    network/bookcoverloader.cpp
 
 
 )
