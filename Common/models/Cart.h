@@ -16,6 +16,8 @@ public:
     bool AddItem(const Book& newbook);
     bool RemoveItem(int bookId);
     bool isEmpty() const;
+    void clear();
+    void loadItems(const QVector<Book> &items);
 
     const QVector<Book>& getItems() const;
     int getNumberofitems() const;

@@ -11,10 +11,10 @@
 // loaded yet) the layout never shifts around.
 namespace BookCardWidget
 {
-// captionOverride replaces the book title under the cover when set -
-// used for the Genres row, where the caption is the genre's name
-// rather than the title of whichever book represents it.
-QPushButton *create(const Book &book, QWidget *parent, const QString &captionOverride = QString());
+    // captionOverride replaces the book title under the cover when set -
+    // used for the Genres row, where the caption is the genre's name
+    // rather than the title of whichever book represents it.
+    QPushButton *create(const Book &book, QWidget *parent, const QString &captionOverride = QString());
 }
 
 #endif // BOOKCARDWIDGET_H
