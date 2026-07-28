@@ -220,8 +220,9 @@ void PersonalLibraryWidget::refreshMyBooks()
         rowLayout->addWidget(btnRead);
 
         int readBookId = book.getId();
-        connect(btnRead, &QPushButton::clicked, this, [this, readBookId]() {
-            emit readRequested(readBookId);
+        QString readBookTitle = book.getTitle();
+        connect(btnRead, &QPushButton::clicked, this, [this, readBookId, readBookTitle]() {
+            emit readRequested(readBookId, readBookTitle);
         });
 
         QComboBox *shelfCombo = buildShelfComboBox();

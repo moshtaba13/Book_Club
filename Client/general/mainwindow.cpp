@@ -70,6 +70,8 @@ MainWindow::MainWindow(QWidget *parent)
     LibraryPage = new PersonalLibraryWidget(this);
     NotificationPage = new NotificationWidget(this);
     SeeAllPage = new SeeAllBooksWidget(this);
+    ReaderPage = new PdfReaderWidget(this);
+    readerReturnPage = nullptr;
 
 
     stack->addWidget(LoginPage);
@@ -85,6 +87,7 @@ MainWindow::MainWindow(QWidget *parent)
     stack->addWidget(PublisherDashboardPage);
     stack->addWidget(AdminPanelPage);
     stack->addWidget(SeeAllPage);
+    stack->addWidget(ReaderPage);
 
     connect(LoginPage, &login::SignInSuccess, this, [this](User user) {
         currentUser = user;
@@ -157,6 +160,12 @@ MainWindow::MainWindow(QWidget *parent)
         stack->setCurrentWidget(HomePage);
     });
 
+    connect(BookDetailPage, &BookDetailWidget::readRequested, this, [this](int bookId, const QString &title) {
+        readerReturnPage = stack->currentWidget();
+        ReaderPage->openBook(bookId, title);
+        stack->setCurrentWidget(ReaderPage);
+    });
+
     stack->setCurrentWidget(LoginPage);
     ForgotPasswordPage = new ForgotPasswordWidget(userManager, this);
     stack->addWidget(ForgotPasswordPage);
@@ -227,8 +236,14 @@ MainWindow::MainWindow(QWidget *parent)
         stack->setCurrentWidget(HomePage);
     });
 
-    connect(LibraryPage, &PersonalLibraryWidget::readRequested, this, [this](int bookId) {
-        BookDetailWidget::openBookFile(bookId, this);
+    connect(LibraryPage, &PersonalLibraryWidget::readRequested, this, [this](int bookId, const QString &title) {
+        readerReturnPage = stack->currentWidget();
+        ReaderPage->openBook(bookId, title);
+        stack->setCurrentWidget(ReaderPage);
+    });
+
+    connect(ReaderPage, &PdfReaderWidget::backRequested, this, [this]() {
+        stack->setCurrentWidget(readerReturnPage ? readerReturnPage : HomePage);
     });
 
     connect(LoginPage, &login::GoToSignUpPublisher, this, [this]() {
