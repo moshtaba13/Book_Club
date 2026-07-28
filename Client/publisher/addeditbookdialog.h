@@ -16,6 +16,13 @@ public:
     void loadForEdit(const Book &book);
     Book getResultBook() const;
 
+    // Local filesystem paths chosen via the file pickers. In edit mode,
+    // these stay equal to the book's existing (server-side) paths unless
+    // the publisher picks a new file - callers should treat a non-absolute
+    // path as "unchanged, don't re-upload".
+    QString getCoverFilePath() const { return coverPath; }
+    QString getPdfFilePath() const { return pdfPath; }
+
 private slots:
     void onChooseCoverClicked();
     void onChoosePdfClicked();
