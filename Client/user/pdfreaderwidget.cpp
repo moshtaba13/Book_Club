@@ -67,14 +67,19 @@ PdfReaderWidget::PdfReaderWidget(QWidget *parent)
     headerLayout->addWidget(zoomOutButton);
     headerLayout->addWidget(zoomInButton);
 
-    prevPageButton = new QPushButton("◀", headerWidget);
-    nextPageButton = new QPushButton("▶", headerWidget);
+    // Extra gap so the zoom group and the page-navigation group read as two
+    // clearly separate clusters instead of one crowded row.
+    headerLayout->addSpacing(18);
+
+    prevPageButton = new QPushButton("‹ Prev", headerWidget);
+    nextPageButton = new QPushButton("Next ›", headerWidget);
     for (QPushButton *btn : {prevPageButton, nextPageButton}) {
         btn->setCursor(Qt::PointingHandCursor);
-        btn->setFixedWidth(34);
+        btn->setMinimumWidth(68);
         btn->setStyleSheet(
-            "QPushButton { background-color: #2C3E50; color: white; border: none; border-radius: 8px; font-weight: bold; min-height: 32px; }"
+            "QPushButton { background-color: #2C3E50; color: white; border: none; border-radius: 8px; font-weight: bold; padding: 0 10px; min-height: 32px; }"
             "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+            "QPushButton:disabled { background-color: #A9B4BE; color: #E9ECEF; }"
             );
     }
     headerLayout->addWidget(prevPageButton);
@@ -82,12 +87,22 @@ PdfReaderWidget::PdfReaderWidget(QWidget *parent)
     pageSpinBox = new QSpinBox(headerWidget);
     pageSpinBox->setMinimum(1);
     pageSpinBox->setMaximum(1);
-    pageSpinBox->setFixedWidth(60);
-    pageSpinBox->setStyleSheet("background-color: rgba(255,255,255,210); border-radius: 6px; padding: 4px; color: #2E4D63;");
+    pageSpinBox->setFixedWidth(72);
+    pageSpinBox->setMinimumHeight(32);
+    pageSpinBox->setAlignment(Qt::AlignCenter);
+    pageSpinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
+    pageSpinBox->setStyleSheet(
+        "QSpinBox { background-color: rgba(255,255,255,210); border-radius: 6px; padding: 4px 2px 4px 8px; color: #2E4D63; }"
+        "QSpinBox::up-button, QSpinBox::down-button {"
+        "   width: 18px; subcontrol-origin: border; border: none; background: transparent;"
+        "}"
+        "QSpinBox::up-button { subcontrol-position: top right; }"
+        "QSpinBox::down-button { subcontrol-position: bottom right; }"
+        );
     headerLayout->addWidget(pageSpinBox);
 
     pageCountLabel = new QLabel(headerWidget);
-    pageCountLabel->setStyleSheet("color: #2E4D63; background: transparent;");
+    pageCountLabel->setStyleSheet("color: #2E4D63; background: transparent; margin-left: 4px;");
     headerLayout->addWidget(pageCountLabel);
 
     goToPageButton = new QPushButton("Go", headerWidget);
@@ -97,6 +112,8 @@ PdfReaderWidget::PdfReaderWidget(QWidget *parent)
         "QPushButton:hover { background-color: rgba(244, 219, 222, 220); }"
         );
     headerLayout->addWidget(goToPageButton);
+
+    headerLayout->addSpacing(18);
     headerLayout->addWidget(nextPageButton);
 
     outerLayout->addWidget(headerWidget);
