@@ -23,11 +23,11 @@ add_executable(BookClubServer
     managers/NotificationManager.h
     managers/NotificationManager.cpp
     managers/UserManager.h
-    managers/userManager.cpp
+    managers/UserManager.cpp
     managers/PurchaseManager.h
     managers/PurchaseManager.cpp
     managers/FileManager.h
-    managers/fileManager.cpp
+    managers/FileManager.cpp
     network/ClientHandler.h
     network/ClientHandler.cpp
     network/Server.h
