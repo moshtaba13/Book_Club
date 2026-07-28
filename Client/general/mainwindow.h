@@ -21,6 +21,7 @@
 #include "publishermanager.h"
 #include "adminpanelwidget.h"
 #include "seeallbookswidget.h"
+#include "pdfreaderwidget.h"
 
 class MainWindow : public QWidget
 {
@@ -52,5 +53,9 @@ private:
     NotificationWidget *NotificationPage;
     AdminPanelWidget *AdminPanelPage;
     SeeAllBooksWidget *SeeAllPage;
+    PdfReaderWidget *ReaderPage;
+    // Whichever page (BookDetailPage or LibraryPage) opened the reader, so
+    // its "Back" button can return there instead of always going Home.
+    QWidget *readerReturnPage;
 };
 #endif // MAINWINDOW_H

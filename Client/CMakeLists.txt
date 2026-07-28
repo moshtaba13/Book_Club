@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(Client LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Network)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Network Pdf PdfWidgets)
 
 qt_standard_project_setup()
 
@@ -42,13 +42,13 @@ qt_add_executable(Client
     ../Common/models/Review.cpp
     user/bookdetailwindow.h
     user/bookdetailwindow.cpp
-    
+
     ../Common/models/Cart.cpp
     ../Common/models/Cart.h
 
     user/cartwidget.h
     user/cartwidget.cpp
-    
+
     ../Common/users/User.h
     ../Common/users/User.cpp
     ../Common/models/Purchase.h
@@ -72,6 +72,8 @@ qt_add_executable(Client
     user/profilewidget.cpp
     user/personallibrarywidget.h
     user/personallibrarywidget.cpp
+    user/pdfreaderwidget.h
+    user/pdfreaderwidget.cpp
     publisher/publishermanager.h
     publisher/publishermanager.cpp
     publisher/registerpublisher.h
@@ -105,6 +107,8 @@ target_link_libraries(Client
         Qt::Core
         Qt::Widgets
         Qt::Network
+        Qt::Pdf
+        Qt::PdfWidgets
 )
 target_include_directories(Client PRIVATE
     ..
@@ -121,8 +125,8 @@ target_include_directories(Client PRIVATE
 
 install(TARGETS Client
     BUNDLE DESTINATION .
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION Client
+    LIBRARY DESTINATION Client
 )
 
 qt_generate_deploy_app_script(
