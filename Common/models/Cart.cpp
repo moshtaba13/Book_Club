@@ -78,3 +78,11 @@ bool Cart::CheckOut() {
     Items.clear();
     return true;
 }
+
+void Cart::clear() {
+    Items.clear();
+}
+
+void Cart::loadItems(const QVector<Book> &items) {
+    Items = items;
+}
