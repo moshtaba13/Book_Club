@@ -19,10 +19,11 @@ public:
 
 public slots:
     void updateUI();
+    void refreshFromServer();
 
 signals:
     void backToHomeRequested();
-    void checkoutSuccessful(const QVector<Book> &purchasedBooks);
+    void checkoutSuccessful();
 
 protected:
     void paintEvent(QPaintEvent *event) override;

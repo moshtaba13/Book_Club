@@ -6,9 +6,12 @@
 #include <QStyleOption>
 #include <QPainter>
 #include <QInputDialog>
+#include <QJsonArray>
+#include "networkclient.h"
+#include "modelserializer.h"
 
 PersonalLibraryWidget::PersonalLibraryWidget(QWidget *parent)
-    : QWidget(parent), currentUser(nullptr)
+    : QWidget(parent)
 {
     this->setObjectName("libraryPage");
     this->setStyleSheet("QWidget#libraryPage { background-color: #FFF8F2; }");
@@ -147,7 +150,33 @@ PersonalLibraryWidget::PersonalLibraryWidget(QWidget *parent)
 
 void PersonalLibraryWidget::loadUser(User &user)
 {
-    currentUser = &user;
+    currentUserId = user.getId();
+    reloadLibraryData();
+}
+
+void PersonalLibraryWidget::reloadLibraryData()
+{
+    QJsonObject purchasedResponse = NetworkClient::instance().sendRequest(RequestType::GetPurchasedBooks);
+    purchasedBooks.clear();
+    if (purchasedResponse.value("status").toString() == "Success") {
+        for (const QJsonValue &v : purchasedResponse.value("data").toObject().value("purchases").toArray())
+            purchasedBooks.append(ModelSerializer::purchaseFromJson(v.toObject()));
+    }
+
+    QJsonObject savedResponse = NetworkClient::instance().sendRequest(RequestType::GetSavedBooks);
+    savedBooks.clear();
+    if (savedResponse.value("status").toString() == "Success") {
+        for (const QJsonValue &v : savedResponse.value("data").toObject().value("books").toArray())
+            savedBooks.append(ModelSerializer::bookFromJson(v.toObject()));
+    }
+
+    QJsonObject shelvesResponse = NetworkClient::instance().sendRequest(RequestType::GetShelves);
+    shelves.clear();
+    if (shelvesResponse.value("status").toString() == "Success") {
+        for (const QJsonValue &v : shelvesResponse.value("data").toObject().value("shelves").toArray())
+            shelves.append(ModelSerializer::shelfFromJson(v.toObject()));
+    }
+
     refreshMyBooks();
     refreshSavedBooks();
     refreshShelves();
@@ -161,10 +190,8 @@ void PersonalLibraryWidget::refreshMyBooks()
         delete child;
     }
 
-    if (!currentUser) return;
-
     QVector<Book> books;
-    for (const Purchase &p : currentUser->getpurchasedBooks()) {
+    for (const Purchase &p : purchasedBooks) {
         books.append(p.getBook());
     }
     if (books.isEmpty()) {
@@ -184,6 +211,19 @@ void PersonalLibraryWidget::refreshMyBooks()
         lblBook->setStyleSheet("color: #2C3E50; background: transparent;");
         rowLayout->addWidget(lblBook, 1);
 
+        QPushButton *btnRead = new QPushButton("Read", row);
+        btnRead->setCursor(Qt::PointingHandCursor);
+        btnRead->setStyleSheet(
+            "QPushButton { background-color: #2C3E50; color: white; border: none; border-radius: 6px; padding: 4px 10px; font-weight: bold; }"
+            "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+            );
+        rowLayout->addWidget(btnRead);
+
+        int readBookId = book.getId();
+        connect(btnRead, &QPushButton::clicked, this, [this, readBookId]() {
+            emit readRequested(readBookId);
+        });
+
         QComboBox *shelfCombo = buildShelfComboBox();
         shelfCombo->setStyleSheet("background-color: white; border-radius: 6px; padding: 4px; color: #2C3E50;");
         rowLayout->addWidget(shelfCombo);
@@ -197,15 +237,21 @@ void PersonalLibraryWidget::refreshMyBooks()
         rowLayout->addWidget(btnAddToShelf);
 
         connect(btnAddToShelf, &QPushButton::clicked, this, [this, book, shelfCombo]() {
-            if (!currentUser) return;
             QString shelfName = shelfCombo->currentText();
-            Shelf *shelf = currentUser->findShelf(shelfName);
-            if (shelf) {
-                shelf->addBook(book);
-                emit userUpdated(*currentUser);
-                refreshShelves();
-                QMessageBox::information(this, "Added", "Book added to shelf: " + shelfName);
+            if (shelfName.isEmpty()) return;
+
+            QJsonObject data;
+            data["shelf_name"] = shelfName;
+            data["book_id"] = book.getId();
+
+            QJsonObject response = NetworkClient::instance().sendRequest(RequestType::AddBookToShelf, data);
+            if (response.value("status").toString() != "Success") {
+                QMessageBox::warning(this, "Error", response.value("message").toString("Could not add the book to the shelf."));
+                return;
             }
+
+            reloadLibraryData();
+            QMessageBox::information(this, "Added", "Book added to shelf: " + shelfName);
         });
 
         myBooksLayout->addWidget(row);
@@ -220,9 +266,7 @@ void PersonalLibraryWidget::refreshSavedBooks()
         delete child;
     }
 
-    if (!currentUser) return;
-
-    QVector<Book> books = currentUser->getSavedBooks();
+    QVector<Book> books = savedBooks;
     if (books.isEmpty()) {
         QLabel *lblNone = new QLabel("No saved books yet.");
         lblNone->setStyleSheet("color: #2C3E50; background: transparent;");
@@ -249,10 +293,14 @@ void PersonalLibraryWidget::refreshSavedBooks()
         rowLayout->addWidget(btnRemove);
 
         connect(btnRemove, &QPushButton::clicked, this, [this, book]() {
-            if (!currentUser) return;
-            currentUser->removeSavedBook(book.getId());
-            emit userUpdated(*currentUser);
-            refreshSavedBooks();
+            QJsonObject data;
+            data["book_id"] = book.getId();
+            QJsonObject response = NetworkClient::instance().sendRequest(RequestType::RemoveSavedBook, data);
+            if (response.value("status").toString() != "Success") {
+                QMessageBox::warning(this, "Error", response.value("message").toString("Could not remove the saved book."));
+                return;
+            }
+            reloadLibraryData();
         });
 
         savedBooksLayout->addWidget(row);
@@ -262,12 +310,9 @@ void PersonalLibraryWidget::refreshSavedBooks()
 QComboBox* PersonalLibraryWidget::buildShelfComboBox(int excludeIndex)
 {
     QComboBox *combo = new QComboBox();
-    if (currentUser) {
-        QVector<Shelf> shelves = currentUser->getShelves();
-        for (int i = 0; i < shelves.size(); ++i) {
-            if (i == excludeIndex) continue;
-            combo->addItem(shelves[i].getName());
-        }
+    for (int i = 0; i < shelves.size(); ++i) {
+        if (i == excludeIndex) continue;
+        combo->addItem(shelves[i].getName());
     }
     return combo;
 }
@@ -280,9 +325,6 @@ void PersonalLibraryWidget::refreshShelves()
         delete child;
     }
 
-    if (!currentUser) return;
-
-    QVector<Shelf> shelves = currentUser->getShelves();
     if (shelves.isEmpty()) {
         QLabel *lblNone = new QLabel("No shelves yet. Create one above!");
         lblNone->setStyleSheet("color: #2C3E50; background: transparent;");
@@ -322,28 +364,37 @@ void PersonalLibraryWidget::refreshShelves()
         shelfBoxLayout->addLayout(shelfHeader);
 
         connect(btnRename, &QPushButton::clicked, this, [this, shelfName]() {
-            if (!currentUser) return;
             bool ok;
             QString newName = QInputDialog::getText(this, "Rename Shelf", "New shelf name:", QLineEdit::Normal, shelfName, &ok);
             if (!ok || newName.trimmed().isEmpty()) return;
 
-            for (const Shelf &s : currentUser->getShelves()) {
+            for (const Shelf &s : shelves) {
                 if (s.getName() == newName.trimmed()) {
                     QMessageBox::warning(this, "Error", "A shelf with this name already exists.");
                     return;
                 }
             }
 
-            currentUser->renameShelf(shelfName, newName.trimmed());
-            emit userUpdated(*currentUser);
-            refreshShelves();
+            QJsonObject data;
+            data["old_name"] = shelfName;
+            data["new_name"] = newName.trimmed();
+            QJsonObject response = NetworkClient::instance().sendRequest(RequestType::RenameShelf, data);
+            if (response.value("status").toString() != "Success") {
+                QMessageBox::warning(this, "Error", response.value("message").toString("Could not rename the shelf."));
+                return;
+            }
+            reloadLibraryData();
         });
 
         connect(btnDeleteShelf, &QPushButton::clicked, this, [this, shelfName]() {
-            if (!currentUser) return;
-            currentUser->removeShelf(shelfName);
-            emit userUpdated(*currentUser);
-            refreshShelves();
+            QJsonObject data;
+            data["name"] = shelfName;
+            QJsonObject response = NetworkClient::instance().sendRequest(RequestType::RemoveShelf, data);
+            if (response.value("status").toString() != "Success") {
+                QMessageBox::warning(this, "Error", response.value("message").toString("Could not delete the shelf."));
+                return;
+            }
+            reloadLibraryData();
         });
 
         for (const Book &book : shelf.getBooks()) {
@@ -382,29 +433,32 @@ void PersonalLibraryWidget::refreshShelves()
 
             int bookId = book.getId();
 
-            connect(btnMove, &QPushButton::clicked, this, [this, shelfName, bookId, moveCombo, book]() {
-                if (!currentUser) return;
+            connect(btnMove, &QPushButton::clicked, this, [this, shelfName, bookId, moveCombo]() {
                 QString targetShelfName = moveCombo->currentText();
                 if (targetShelfName.isEmpty()) return;
 
-                Shelf *sourceShelf = currentUser->findShelf(shelfName);
-                Shelf *targetShelf = currentUser->findShelf(targetShelfName);
-                if (sourceShelf && targetShelf) {
-                    sourceShelf->removeBook(bookId);
-                    targetShelf->addBook(book);
-                    emit userUpdated(*currentUser);
-                    refreshShelves();
+                QJsonObject data;
+                data["from_shelf"] = shelfName;
+                data["to_shelf"] = targetShelfName;
+                data["book_id"] = bookId;
+                QJsonObject response = NetworkClient::instance().sendRequest(RequestType::MoveBookBetweenShelves, data);
+                if (response.value("status").toString() != "Success") {
+                    QMessageBox::warning(this, "Error", response.value("message").toString("Could not move the book."));
+                    return;
                 }
+                reloadLibraryData();
             });
 
             connect(btnRemoveFromShelf, &QPushButton::clicked, this, [this, shelfName, bookId]() {
-                if (!currentUser) return;
-                Shelf *targetShelf = currentUser->findShelf(shelfName);
-                if (targetShelf) {
-                    targetShelf->removeBook(bookId);
-                    emit userUpdated(*currentUser);
-                    refreshShelves();
+                QJsonObject data;
+                data["shelf_name"] = shelfName;
+                data["book_id"] = bookId;
+                QJsonObject response = NetworkClient::instance().sendRequest(RequestType::RemoveBookFromShelf, data);
+                if (response.value("status").toString() != "Success") {
+                    QMessageBox::warning(this, "Error", response.value("message").toString("Could not remove the book from the shelf."));
+                    return;
                 }
+                reloadLibraryData();
             });
 
             shelfBoxLayout->addLayout(bookRow);
@@ -422,21 +476,16 @@ void PersonalLibraryWidget::onCreateShelfClicked()
         return;
     }
 
-    if (!currentUser) return;
-
-    for (const Shelf &s : currentUser->getShelves()) {
-        if (s.getName() == name) {
-            QMessageBox::warning(this, "Error", "A shelf with this name already exists.");
-            return;
-        }
+    QJsonObject data;
+    data["name"] = name;
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::AddShelf, data);
+    if (response.value("status").toString() != "Success") {
+        QMessageBox::warning(this, "Error", response.value("message").toString("A shelf with this name already exists."));
+        return;
     }
 
-    Shelf newShelf(name);
-    currentUser->addShelf(newShelf);
     leNewShelfName->clear();
-
-    emit userUpdated(*currentUser);
-    refreshShelves();
+    reloadLibraryData();
 }
 
 void PersonalLibraryWidget::onBackClicked()

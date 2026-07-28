@@ -1,100 +1,129 @@
 #include "UserManager.h"
 
+#include <QJsonArray>
+
+#include "networkclient.h"
+#include "modelserializer.h"
+#include "protocol.h"
+
 UserManager::UserManager() {}
 
-bool UserManager::usernameExists(const QString &username) const
+bool UserManager::registerUser(const QString &username, const QString &password,
+                               const QString &securityAnswer, QString &errorOut)
 {
-    for (const User &u : registeredUsers) {
-        if (u.getUsername() == username) {
-            return true;
-        }
-    }
-    return false;
-}
+    QJsonObject data;
+    data["username"] = username;
+    data["password"] = password;
+    data["security_answer"] = securityAnswer;
 
-bool UserManager::registerUser(const User &newUser)
-{
-    if (usernameExists(newUser.getUsername())) {
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::Register, data);
+    if (response.value("status").toString() != "Success") {
+        errorOut = response.value("message").toString("Registration failed.");
         return false;
     }
-    registeredUsers.append(newUser);
     return true;
 }
 
-bool UserManager::authenticate(const QString &username, const QString &password, User &foundUser)
+bool UserManager::resetPassword(const QString &username, const QString &securityAnswer,
+                                const QString &newPassword, QString &errorOut)
 {
-    for (const User &u : registeredUsers) {
-        if (u.getUsername() == username && u.getPassword() == password) {
-            foundUser = u;
-            return true;
-        }
+    QJsonObject data;
+    data["username"] = username;
+    data["security_answer"] = securityAnswer;
+    data["new_password"] = newPassword;
+
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::ResetPassword, data);
+    if (response.value("status").toString() != "Success") {
+        errorOut = response.value("message").toString("Could not reset the password.");
+        return false;
     }
-    return false;
-}
-bool UserManager::getSecurityAnswer(const QString &username, QString &answerOut)
-{
-    for (const User &u : registeredUsers) {
-        if (u.getUsername() == username) {
-            answerOut = u.getSecurityAnswer();
-            return true;
-        }
-    }
-    return false;
+    return true;
 }
 
-bool UserManager::resetPassword(const QString &username, const QString &securityAnswer, const QString &newPassword)
+bool UserManager::changeUsername(const QString &newUsername, QString &errorOut)
 {
-    for (int i = 0; i < registeredUsers.size(); ++i) {
-        if (registeredUsers[i].getUsername() == username &&
-            registeredUsers[i].getSecurityAnswer() == securityAnswer) {
-            registeredUsers[i].setPassword(newPassword);
-            return true;
-        }
+    QJsonObject data;
+    data["username"] = newUsername;
+
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::ChangeUsername, data);
+    if (response.value("status").toString() != "Success") {
+        errorOut = response.value("message").toString("Could not change the username.");
+        return false;
     }
-    return false;
-}
-bool UserManager::isUsernameTakenByAnotherUser(const QString &username, int excludeUserId) const
-{
-    for (const User &u : registeredUsers) {
-        if (u.getUsername() == username && u.getId() != excludeUserId) {
-            return true;
-        }
-    }
-    return false;
-}
-bool UserManager::updateUser(const User &updatedUser)
-{
-    for (int i = 0; i < registeredUsers.size(); ++i) {
-        if (registeredUsers[i].getId() == updatedUser.getId()) {
-            registeredUsers[i] = updatedUser;
-            return true;
-        }
-    }
-    return false;
-}
-QVector<User> UserManager::getAllUsers() const
-{
-    return registeredUsers;
+    return true;
 }
 
-bool UserManager::setUserBlocked(int userId, bool blocked)
+bool UserManager::changePassword(const QString &oldPassword, const QString &newPassword, QString &errorOut)
 {
-    for (int i = 0; i < registeredUsers.size(); ++i) {
-        if (registeredUsers[i].getId() == userId) {
-            registeredUsers[i].setBlocked(blocked);
-            return true;
-        }
+    QJsonObject data;
+    data["old_password"] = oldPassword;
+    data["new_password"] = newPassword;
+
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::ChangePassword, data);
+    if (response.value("status").toString() != "Success") {
+        errorOut = response.value("message").toString("Could not change the password.");
+        return false;
     }
-    return false;
+    return true;
 }
 
-bool UserManager::deleteUser(int userId)
+bool UserManager::updateFavoriteGenres(const QVector<genre> &genres, QString &errorOut)
 {
-    for (int i = 0; i < registeredUsers.size(); ++i) {
-        if (registeredUsers[i].getId() == userId) {
-            registeredUsers.removeAt(i);
-            return true;
-        }
+    QJsonArray genresArray;
+    for (const genre &g : genres)
+        genresArray.append(genreToString(g));
+
+    QJsonObject data;
+    data["genres"] = genresArray;
+
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::UpdateFavoriteGenres, data);
+    if (response.value("status").toString() != "Success") {
+        errorOut = response.value("message").toString("Could not update favorite genres.");
+        return false;
     }
-    return false;
+    return true;
+}
+
+QVector<User> UserManager::getAllUsers(QString &errorOut)
+{
+    QVector<User> users;
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::GetAllUsers);
+
+    if (response.value("status").toString() != "Success") {
+        errorOut = response.value("message").toString("Could not load users.");
+        return users;
+    }
+
+    for (const QJsonValue &v : response.value("data").toObject().value("users").toArray())
+        users.append(ModelSerializer::userFromJson(v.toObject()));
+
+    return users;
+}
+
+bool UserManager::setUserBlocked(int userId, bool blocked, QString &errorOut)
+{
+    QJsonObject data;
+    data["user_id"] = userId;
+
+    QJsonObject response = NetworkClient::instance().sendRequest(
+        blocked ? RequestType::BlockUser : RequestType::UnblockUser, data);
+
+    if (response.value("status").toString() != "Success") {
+        errorOut = response.value("message").toString("Could not update the user's status.");
+        return false;
+    }
+    return true;
+}
+
+bool UserManager::deleteUser(int userId, QString &errorOut)
+{
+    QJsonObject data;
+    data["user_id"] = userId;
+
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::DeleteUser, data);
+    if (response.value("status").toString() != "Success") {
+        errorOut = response.value("message").toString("Could not delete the user.");
+        return false;
+    }
+    return true;
 }

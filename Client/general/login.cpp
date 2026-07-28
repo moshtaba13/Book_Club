@@ -2,10 +2,22 @@
 #include <QStyleOption>
 #include <QPainter>
 #include <QMessageBox>
+#include <QSettings>
 #include "home.h"
+#include "networkclient.h"
+#include "modelserializer.h"
 
-login::login(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent)
-    : QWidget(parent), userManager(userManager), publisherManager(publisherManager)
+namespace {
+// Where "remember me" is persisted between runs of the client.
+QSettings &loginSettings()
+{
+    static QSettings settings("BookClub", "BookClubClient");
+    return settings;
+}
+}
+
+login::login(QWidget *parent)
+    : QWidget(parent)
 {
     this->setObjectName("loginPage");
     this->setStyleSheet(
@@ -159,6 +171,12 @@ login::login(UserManager *userManager, PublisherManager *publisherManager, QWidg
 
 
     connect(btnforgot, &QPushButton::clicked, this, &login::ForgotPasswordRequested);
+
+    if (loginSettings().value("rememberMe", false).toBool()) {
+        leusername->setText(loginSettings().value("username").toString());
+        lepassword->setText(loginSettings().value("password").toString());
+        chkrememberme->setChecked(true);
+    }
 }
 
 void login::paintEvent(QPaintEvent *event) {
@@ -187,27 +205,36 @@ void login::onSignInClicked()
         return;
     }
 
-    User foundUser;
-    if (userManager->authenticate(username, password, foundUser)) {
-        if (foundUser.isBlocked()) {
-            QMessageBox::warning(this, "Login", "Your account has been blocked. Please contact support.");
-            return;
-        }
-        emit SignInSuccess(foundUser);
+    QJsonObject data;
+    data["username"] = username;
+    data["password"] = password;
+
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::Login, data);
+    if (response.value("status").toString() != "Success") {
+        QMessageBox::warning(this, "Login", response.value("message").toString("Incorrect username or password."));
         return;
     }
 
-    Publisher foundPublisher;
-    if (publisherManager->authenticate(username, password, foundPublisher)) {
-        if (foundPublisher.isBlocked()) {
-            QMessageBox::warning(this, "Login", "Your account has been blocked. Please contact support.");
-            return;
-        }
-        emit PublisherSignInSuccess(foundPublisher);
-        return;
+    if (chkrememberme->isChecked()) {
+        loginSettings().setValue("rememberMe", true);
+        loginSettings().setValue("username", username);
+        loginSettings().setValue("password", password);
+    } else {
+        loginSettings().remove("rememberMe");
+        loginSettings().remove("username");
+        loginSettings().remove("password");
     }
 
-    QMessageBox::warning(this, "Login", "Incorrect username or password.");
+    QJsonObject memberData = response.value("data").toObject();
+    QString role = memberData.value("role").toString();
+
+    if (role == "Publisher") {
+        emit PublisherSignInSuccess(ModelSerializer::publisherFromJson(memberData));
+    } else if (role == "User") {
+        emit SignInSuccess(ModelSerializer::userFromJson(memberData));
+    } else {
+        QMessageBox::warning(this, "Login", "This account cannot sign in here. Use \"Enter as Admin\" for admin accounts.");
+    }
 }
 
 login::~login() {

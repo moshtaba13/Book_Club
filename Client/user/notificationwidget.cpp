@@ -4,9 +4,12 @@
 #include <QFrame>
 #include <QStyleOption>
 #include <QPainter>
+#include <QJsonArray>
+#include "networkclient.h"
+#include "modelserializer.h"
 
 NotificationWidget::NotificationWidget(QWidget *parent)
-    : QWidget(parent), currentUser(nullptr)
+    : QWidget(parent)
 {
     this->setObjectName("notificationPage");
     this->setStyleSheet("QWidget#notificationPage { background-color: #FFF8F2; }");
@@ -82,9 +85,15 @@ NotificationWidget::NotificationWidget(QWidget *parent)
     connect(btnMarkAllRead, &QPushButton::clicked, this, &NotificationWidget::onMarkAllReadClicked);
 }
 
-void NotificationWidget::loadUser(User &user)
+void NotificationWidget::refreshFromServer()
 {
-    currentUser = &user;
+    notifications.clear();
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::GetNotifications);
+    if (response.value("status").toString() == "Success") {
+        for (const QJsonValue &v : response.value("data").toObject().value("notifications").toArray())
+            notifications.append(ModelSerializer::notificationFromJson(v.toObject()));
+    }
+
     refreshNotifications();
 }
 
@@ -95,10 +104,6 @@ void NotificationWidget::refreshNotifications()
         if (child->widget()) child->widget()->deleteLater();
         delete child;
     }
-
-    if (!currentUser) return;
-
-    QVector<Notification> notifications = currentUser->getNotifications();
 
     if (notifications.isEmpty()) {
         QLabel *lblNone = new QLabel("You have no notifications yet.");
@@ -142,10 +147,10 @@ void NotificationWidget::refreshNotifications()
         invisibleClickCatcher->lower();
 
         connect(invisibleClickCatcher, &QPushButton::clicked, this, [this, notifId]() {
-            if (!currentUser) return;
-            currentUser->markNotificationRead(notifId);
-            emit userUpdated(*currentUser);
-            refreshNotifications();
+            QJsonObject data;
+            data["notification_id"] = notifId;
+            NetworkClient::instance().sendRequest(RequestType::MarkNotificationRead, data);
+            refreshFromServer();
         });
 
         notificationsLayout->addWidget(row);
@@ -154,10 +159,8 @@ void NotificationWidget::refreshNotifications()
 
 void NotificationWidget::onMarkAllReadClicked()
 {
-    if (!currentUser) return;
-    currentUser->markAllNotificationsRead();
-    emit userUpdated(*currentUser);
-    refreshNotifications();
+    NetworkClient::instance().sendRequest(RequestType::MarkAllNotificationsRead);
+    refreshFromServer();
 }
 
 void NotificationWidget::onBackClicked()

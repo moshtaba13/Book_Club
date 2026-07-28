@@ -12,8 +12,6 @@
 #include <QPaintEvent>
 #include <QAction>
 #include "home.h"
-#include "UserManager.h"
-#include "PublisherManager.h"
 #include "User.h"
 #include "Publisher.h"
 
@@ -21,7 +19,7 @@ class login : public QWidget
 {
     Q_OBJECT
 public:
-    explicit login(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent = nullptr);
+    explicit login(QWidget *parent = nullptr);
     ~login();
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -35,9 +33,6 @@ signals:
     void ForgotPasswordRequested();
     void EnterAsAdminRequested();
 private:
-    UserManager *userManager;
-    PublisherManager *publisherManager;
-
     QFrame *loginframe;
     QLabel *lblwelcome;
     QLabel *lblsubtitle;

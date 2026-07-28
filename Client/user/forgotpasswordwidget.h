@@ -26,7 +26,6 @@ private slots:
 private:
     UserManager *userManager;
     QString currentUsername;
-    QString currentSecurityAnswer;
 
     QLineEdit *leUsername;
     QPushButton *btnFindUser;
