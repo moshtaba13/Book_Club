@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QDateTime>
+#include <QTableWidget>
 #include <QScrollBar>
 
 QT_BEGIN_NAMESPACE
@@ -30,12 +31,27 @@ private:
     void startServer();
     void stopServer();
     void updateServerStatus(bool isRunning);
+
+
     void addLog(const QString &message);
+    void addSystemEvent(const QString &event);
+
+    void addClientToTable(int clientId);
+    void removeClientFromTable(int clientId);
+
+    double getCpuUsage();
+    double getMemoryUsage();
+    void updateHealthStatus(int onlineClients,
+                            double cpu,
+                            double memory);
 
     Ui::ServerWindow *ui;
     QTimer *m_statsTimer;
     bool m_isRunning;
     int m_totalConnections;
+    quint64 m_lastIdleTime = 0;
+    quint64 m_lastKernelTime = 0;
+    quint64 m_lastUserTime = 0;
 };
 
 #endif
