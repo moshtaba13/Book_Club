@@ -98,6 +98,8 @@ qt_add_executable(Client
     user/bookcardwidget.cpp
     user/seeallbookswidget.h
     user/seeallbookswidget.cpp
+    user/pdfreaderwidget.h
+    user/pdfreaderwidget.cpp
 
 )
 target_link_libraries(Client
