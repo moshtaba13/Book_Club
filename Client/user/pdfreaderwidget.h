@@ -13,7 +13,7 @@ class PdfReaderWidget : public QWidget
 public:
     explicit PdfReaderWidget(QWidget *parent = nullptr);
 
-    void openBook(int bookId, const QString &title);
+    bool openBook(int bookId, const QString &title);
 
 signals:
     void backRequested();
