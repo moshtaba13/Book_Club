@@ -189,13 +189,12 @@ QVector<Book> BookRepository::search(const QString &keyword)
     QSqlQuery query = Database::instance().createQuery();
 
     query.prepare(
-        "SELECT b.*, u.username as publisher_username "
+        "SELECT b.*, p.username as publisher_username "
         "FROM books b "
-        "JOIN users u ON b.publisher_id = u.id "
+        "JOIN members p ON b.publisher_id = p.id "
         "WHERE b.is_active = 1 AND ("
         "b.title  LIKE :keyword OR "
-        "b.author LIKE :keyword OR "
-        "u.username LIKE :keyword"
+        "b.author LIKE :keyword"
         ")"
     );
     query.bindValue(":keyword", "%" + keyword + "%");
@@ -205,6 +204,36 @@ QVector<Book> BookRepository::search(const QString &keyword)
 
     while (query.next())
         books.append(mapToBook(query));
+
+    if (!keyword.isEmpty()) {
+        QSqlQuery allActiveQuery = Database::instance().createQuery();
+        allActiveQuery.prepare(
+            "SELECT b.*, p.username as publisher_username "
+            "FROM books b "
+            "JOIN members p ON b.publisher_id = p.id "
+            "WHERE b.is_active = 1"
+        );
+
+        if (allActiveQuery.exec()) {
+            while (allActiveQuery.next()) {
+                Book candidate = mapToBook(allActiveQuery);
+
+                if (!candidate.getPublisherUsername().contains(keyword, Qt::CaseInsensitive))
+                    continue;
+
+                bool alreadyIncluded = false;
+                for (const Book &existing : books) {
+                    if (existing.getId() == candidate.getId()) {
+                        alreadyIncluded = true;
+                        break;
+                    }
+                }
+
+                if (!alreadyIncluded)
+                    books.append(candidate);
+            }
+        }
+    }
 
     return books;
 }
@@ -299,14 +328,39 @@ bool BookRepository::updateAverageRating(int bookId, double rating) {
 }
 
 bool BookRepository::remove(int bookId) {
+    Database::instance().transaction();
+
+    auto deleteFrom = [&](const QString &table) {
+        QSqlQuery query = Database::instance().createQuery();
+        query.prepare(QString("DELETE FROM %1 WHERE book_id = :book_id").arg(table));
+        query.bindValue(":book_id", bookId);
+        if (!query.exec()) {
+            qWarning() << "BookRepository::remove error clearing" << table << ":" << query.lastError().text();
+            return false;
+        }
+        return true;
+    };
+
+    if (!deleteFrom("reviews") ||
+        !deleteFrom("purchases") ||
+        !deleteFrom("carts") ||
+        !deleteFrom("saved_books") ||
+        !deleteFrom("shelf_books")) {
+        Database::instance().rollback();
+        return false;
+    }
+
     QSqlQuery query = Database::instance().createQuery();
     query.prepare("DELETE FROM books WHERE id = :id");
     query.bindValue(":id", bookId);
 
     if (!query.exec()) {
         qWarning() << "BookRepository::remove error:" << query.lastError().text();
+        Database::instance().rollback();
         return false;
     }
+
+    Database::instance().commit();
     return true;
 }
 

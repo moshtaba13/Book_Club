@@ -254,7 +254,7 @@ bool MemberRepository::updateUsername(int userId, const QString &newUsername) {
     QSqlQuery query = Database::instance().createQuery();
     query.prepare("UPDATE members SET username = :username WHERE id = :id");
 
-    query.bindValue(":username", AuthManager::instance().encrypt(newUsername));
+    query.bindValue(":username", newUsername);
     query.bindValue(":id", userId);
 
     if (!query.exec()) {
@@ -343,14 +343,62 @@ bool MemberRepository::updateTotalRevenue(int publisherId, double revenue)
 
 bool MemberRepository::remove(int id)
 {
+    Database::instance().transaction();
+
+    auto execDelete = [&](const QString &sql, int boundId) {
+        QSqlQuery query = Database::instance().createQuery();
+        query.prepare(sql);
+        query.bindValue(":id", boundId);
+        if (!query.exec()) {
+            qWarning() << "MemberRepository::remove error running" << sql << ":" << query.lastError().text();
+            return false;
+        }
+        return true;
+    };
+
+    if (!execDelete("DELETE FROM reviews WHERE user_id = :id", id) ||
+        !execDelete("DELETE FROM purchases WHERE user_id = :id", id) ||
+        !execDelete("DELETE FROM carts WHERE user_id = :id", id) ||
+        !execDelete("DELETE FROM saved_books WHERE user_id = :id", id) ||
+        !execDelete("DELETE FROM shelf_books WHERE user_id = :id", id) ||
+        !execDelete("DELETE FROM shelves WHERE user_id = :id", id) ||
+        !execDelete("DELETE FROM notifications WHERE user_id = :id", id)) {
+        Database::instance().rollback();
+        return false;
+    }
+
+    QVector<int> publishedBookIds;
+    QSqlQuery bookIdsQuery = Database::instance().createQuery();
+    bookIdsQuery.prepare("SELECT id FROM books WHERE publisher_id = :id");
+    bookIdsQuery.bindValue(":id", id);
+    if (bookIdsQuery.exec()) {
+        while (bookIdsQuery.next())
+            publishedBookIds.append(bookIdsQuery.value(0).toInt());
+    }
+
+    for (int bookId : publishedBookIds) {
+        if (!execDelete("DELETE FROM reviews WHERE book_id = :id", bookId) ||
+            !execDelete("DELETE FROM purchases WHERE book_id = :id", bookId) ||
+            !execDelete("DELETE FROM carts WHERE book_id = :id", bookId) ||
+            !execDelete("DELETE FROM saved_books WHERE book_id = :id", bookId) ||
+            !execDelete("DELETE FROM shelf_books WHERE book_id = :id", bookId) ||
+            !execDelete("DELETE FROM books WHERE id = :id", bookId)) {
+            Database::instance().rollback();
+            return false;
+        }
+    }
+
     QSqlQuery query = Database::instance().createQuery();
     query.prepare("DELETE FROM members WHERE id = :id");
     query.bindValue(":id", id);
 
     if (!query.exec()) {
         qWarning() << "MemberRepository::remove error:" << query.lastError().text();
+        Database::instance().rollback();
         return false;
     }
+
+    Database::instance().commit();
     return true;
 }
 
