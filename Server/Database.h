@@ -35,6 +35,10 @@ public:
 
     QSqlQuery createQuery() const;
 
+    bool transaction();
+    bool commit();
+    bool rollback();
+
 };
 
 #endif

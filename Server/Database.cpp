@@ -55,6 +55,18 @@ QSqlQuery Database::createQuery() const{
     return QSqlQuery(db);
 }
 
+bool Database::transaction() {
+    return db.transaction();
+}
+
+bool Database::commit() {
+    return db.commit();
+}
+
+bool Database::rollback() {
+    return db.rollback();
+}
+
 
 bool Database::createMembersTable() {
     QSqlQuery query(db);
