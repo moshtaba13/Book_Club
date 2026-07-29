@@ -136,7 +136,7 @@ PdfReaderWidget::PdfReaderWidget(QWidget *parent)
             this, &PdfReaderWidget::onCurrentPageChanged);
 }
 
-void PdfReaderWidget::openBook(int bookId, const QString &title)
+bool PdfReaderWidget::openBook(int bookId, const QString &title)
 {
 
     if (currentBookId != -1 && currentBookId != bookId)
@@ -149,7 +149,7 @@ void PdfReaderWidget::openBook(int bookId, const QString &title)
     if (response.value("status").toString() != "Success") {
         QMessageBox::warning(this, "Cannot Open Book",
                              response.value("message").toString("You must purchase this book first."));
-        return;
+        return false;
     }
 
     QByteArray pdfBytes = QByteArray::fromBase64(
@@ -162,7 +162,7 @@ void PdfReaderWidget::openBook(int bookId, const QString &title)
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly) || file.write(pdfBytes) < 0) {
         QMessageBox::warning(this, "Error", "Could not save the book file for reading.");
-        return;
+        return false;
     }
     file.close();
 
@@ -181,7 +181,7 @@ void PdfReaderWidget::openBook(int bookId, const QString &title)
     if (document->status() != QPdfDocument::Status::Ready) {
         QMessageBox::warning(this, "Error", "Could not open the book for reading.");
         loadingBook = false;
-        return;
+        return false;
     }
 
     pageSpinBox->setMaximum(document->pageCount());
@@ -197,6 +197,7 @@ void PdfReaderWidget::openBook(int bookId, const QString &title)
     updatePageControls();
 
     loadingBook = false;
+    return true;
 }
 
 void PdfReaderWidget::updatePageControls()

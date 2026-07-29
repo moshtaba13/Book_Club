@@ -159,9 +159,11 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(BookDetailPage, &BookDetailWidget::readRequested, this, [this](int bookId, const QString &title) {
-        readerReturnPage = stack->currentWidget();
-        ReaderPage->openBook(bookId, title);
-        stack->setCurrentWidget(ReaderPage);
+        QWidget *previousPage = stack->currentWidget();
+        if (ReaderPage->openBook(bookId, title)) {
+            readerReturnPage = previousPage;
+            stack->setCurrentWidget(ReaderPage);
+        }
     });
 
     stack->setCurrentWidget(LoginPage);
@@ -185,6 +187,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ProfilePage, &ProfileWidget::userUpdated, this, [this](User updatedUser) {
         currentUser = updatedUser;
+        loadHomePageContent();
     });
     connect(HomePage, &home::libraryRequested, this, [this]() {
         LibraryPage->loadUser(currentUser);
@@ -235,9 +238,11 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(LibraryPage, &PersonalLibraryWidget::readRequested, this, [this](int bookId, const QString &title) {
-        readerReturnPage = stack->currentWidget();
-        ReaderPage->openBook(bookId, title);
-        stack->setCurrentWidget(ReaderPage);
+        QWidget *previousPage = stack->currentWidget();
+        if (ReaderPage->openBook(bookId, title)) {
+            readerReturnPage = previousPage;
+            stack->setCurrentWidget(ReaderPage);
+        }
     });
 
     connect(ReaderPage, &PdfReaderWidget::backRequested, this, [this]() {
