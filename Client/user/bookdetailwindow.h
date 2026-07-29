@@ -46,6 +46,7 @@ private:
     QLabel *coverLabel;
     QLabel *titleLabel;
     QLabel *authorLabel;
+    QLabel *publisherLabel;
     QLabel *genreLabel;
     QLabel *descriptionLabel;
     QLabel *priceLabel;

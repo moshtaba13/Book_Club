@@ -109,6 +109,11 @@ BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
     authorLabel->setStyleSheet("color: #706357; background: transparent;");
     textColumn->addWidget(authorLabel);
 
+    publisherLabel = new QLabel(infoCard);
+    publisherLabel->setFont(QFont("Segoe UI", 11));
+    publisherLabel->setStyleSheet("color: #706357; background: transparent;");
+    textColumn->addWidget(publisherLabel);
+
     genreLabel = new QLabel(infoCard);
     genreLabel->setFont(QFont("Segoe UI", 11, QFont::DemiBold));
     genreLabel->setStyleSheet("color: #2E4D63; background: transparent;");
@@ -285,6 +290,7 @@ void BookDetailWidget::loadBook(const Book &book)
 
     titleLabel->setText(currentBook.getTitle());
     authorLabel->setText("by " + currentBook.getAuthor());
+    publisherLabel->setText("Published by " + currentBook.getPublisherUsername());
     genreLabel->setText(genreToString(currentBook.getGenre()));
     descriptionLabel->setText(currentBook.getDiscription().isEmpty() ? "No description available." : currentBook.getDiscription());
     ratingLabel->setText(QString("⭐ %1 / 5").arg(currentBook.getAverageRating(), 0, 'f', 1));
